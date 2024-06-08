@@ -1,0 +1,42 @@
+{
+  "expo": {
+    "name": "HikingPlanner1",
+    "slug": "HikingPlanner1",
+    "scheme": "HikingPlanner",
+    "platforms": ["ios", "android", "web"],
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/logo.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/logo.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.kar11047.HikingPlanner",
+      "buildNumber": "1.0.0",
+      "config": {
+        "googleMapsApiKey": "AIzaSyCEOPjT8WKKc4adP5dJ2vpm9PF2G4_kDq4"
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/logo.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.kar11047.HikingPlanner"
+    },
+    "web": {
+      "favicon": "./assets/logo.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "c910a000-c4f4-431c-afdb-229e9da42e36"
+      }
+    },
+    "owner": "kar11047"
+  }
+}
