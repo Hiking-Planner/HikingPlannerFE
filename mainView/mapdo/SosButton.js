@@ -88,7 +88,7 @@ const SosButton = ({ userId, location, userName }) => {
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <Text style={styles.modalText}>긴급신고가 필요한 상황이신가요?</Text>
-            <Text style={styles.modalText}>취소를 누르지 않으면 3초 후에 자동으로 신고됩니다~</Text>
+            <Text style={styles.modalText}>취소를 누르지 않으면 3초 후에 자동으로 신고됩니다.</Text>
             {sosInfo && (
               <>
                 <Text style={styles.modalText}>이름: {sosInfo.username || userName}</Text>
