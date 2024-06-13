@@ -9,13 +9,39 @@ import {
 } from 'react-native';
 import axios from 'axios';
 import * as Location from 'expo-location';
+import { Audio } from 'expo-av';
 
 const SosButton = ({ userId, location, userName }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [autoSendTimeout, setAutoSendTimeout] = useState(null);
   const [sosInfo, setSosInfo] = useState(null);
+  const [sound, setSound] = useState(null);
+
+  const playSiren = async () => {
+    const { sound } = await Audio.Sound.createAsync(
+      require('../../assets/siren.mp3')
+    );
+    setSound(sound);
+    await sound.playAsync();
+  };
+
+  const stopSiren = async () => {
+    if (sound) {
+      await sound.stopAsync();
+    }
+  };
+
+  useEffect(() => {
+    return sound
+      ? () => {
+          sound.unloadAsync();
+        }
+      : undefined;
+  }, [sound]);
 
   const handleSosPress = async () => {
+    await playSiren();
+
     try {
       const response = await axios.post(
         'http://ec2-3-143-125-20.us-east-2.compute.amazonaws.com:8080/api/v1/auth/sos',
@@ -37,6 +63,7 @@ const SosButton = ({ userId, location, userName }) => {
       const timeout = setTimeout(async () => {
         await sendSosMessage(data);
         setModalVisible(false);
+        await stopSiren();
       }, 3000);
 
       setAutoSendTimeout(timeout);
@@ -66,12 +93,13 @@ const SosButton = ({ userId, location, userName }) => {
     }
   };
 
-  const handleCancel = () => {
+  const handleCancel = async () => {
     if (autoSendTimeout) {
       clearTimeout(autoSendTimeout);
       setAutoSendTimeout(null);
     }
     setModalVisible(false);
+    await stopSiren();
   };
 
   return (
@@ -157,4 +185,3 @@ const styles = StyleSheet.create({
 });
 
 export default SosButton;
-
