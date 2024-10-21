@@ -23,7 +23,7 @@ const MountainCard = ({ mountain }) => {
       <View style={styles.card}>
         <Image
           source={{
-            uri: `http://ec2-3-143-125-20.us-east-2.compute.amazonaws.com:8080/${mountain.image_info[0].img_url}`,
+            uri: `http://3.34.159.30:8080/${mountain.image_info[0].img_url}`,
           }}
           style={styles.image}
         />
