@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, Alert } from 'react-native';
-import { TextInput, Button, Text } from 'react-native-paper';
+import React, { useState, useRef } from 'react';
+import { View, StyleSheet, Alert, Text } from 'react-native';
+import { TextInput, Button } from 'react-native-paper';
 import colors from './sub/colors';
-import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
+import { basicAxios } from './api/axios'; // basicAxios 사용
 
 const SignUp = () => {
   const [id, setId] = useState('');
@@ -15,42 +15,51 @@ const SignUp = () => {
   const [isEmailVerified, setIsEmailVerified] = useState(false);
   const [isCertificationSent, setIsCertificationSent] = useState(false);
   const navigation = useNavigation();
+  const phoneInputRef = useRef(null); // 전화번호 입력 필드 참조
 
+  // 이메일 인증 요청
   const sendEmailCertification = async () => {
     try {
-      await axios.post(
-        'http://3.34.159.30:8080/api/v1/auth/email-certification',
-        {
-          id: id,
-          email: email,
-        }
-      );
+      const response = await basicAxios.post('/api/v1/auth/email-certification', {
+        id,
+        email,
+      });
       Alert.alert('성공', '인증 이메일이 발송되었습니다.');
       setIsCertificationSent(true);
     } catch (error) {
-      console.error('이메일 인증을 보내는 중 오류 발생:', error);
-      Alert.alert('오류', '인증 이메일 발송에 실패했습니다.');
+      console.error('이메일 인증 오류:', error.response || error.message);
+  
+      // 네트워크 에러인지 확인
+      if (error.message === 'Network Error') {
+        Alert.alert('네트워크 오류', '네트워크 연결을 확인하세요.');
+      } else if (error.response) {
+        // 서버 응답이 있는 경우
+        console.error('서버 응답:', error.response.data);
+        Alert.alert('오류', `서버 오류: ${error.response.data.message}`);
+      } else {
+        // 기타 오류
+        Alert.alert('오류', '알 수 없는 오류가 발생했습니다.');
+      }
     }
   };
 
+  // 인증 번호 확인 요청
   const checkCertification = async () => {
     try {
-      await axios.post(
-        'http://3.34.159.30:8080/api/v1/auth/check-certification',
-        {
-          id: id,
-          email: email,
-          certificationNumber: certificationNumber,
-        }
-      );
+      await basicAxios.post('/api/v1/auth/check-certification', {
+        id,
+        email,
+        certificationNumber,
+      });
       Alert.alert('성공', '인증 번호가 확인되었습니다.');
       setIsEmailVerified(true);
     } catch (error) {
-      console.error('인증 번호 확인 중 오류 발생:', error);
+      console.error('인증 번호 확인 오류:', error.response || error.message);
       Alert.alert('오류', '인증 번호 확인에 실패했습니다.');
     }
   };
 
+  // 회원가입 요청
   const signUp = async () => {
     if (!isEmailVerified) {
       Alert.alert('오류', '이메일 인증을 먼저 완료해주세요.');
@@ -63,20 +72,17 @@ const SignUp = () => {
     }
 
     try {
-      await axios.post(
-        'http://3.34.159.30:8080/api/v1/auth/sign-up',
-        {
-          id: id,
-          password: password,
-          email: email,
-          phoneNumber: phoneNumber, // 전화번호 추가
-          certificationNumber: certificationNumber,
-        }
-      );
-      Alert.alert('성공', '회원가입에 성공했습니다.');
-      navigation.navigate('Login'); // 회원가입 성공 후 로그인 화면으로 이동
+      await basicAxios.post('/api/v1/auth/sign-up', {
+        id,
+        password,
+        email,
+        phoneNumber,
+        certificationNumber,
+      });
+      Alert.alert('성공', '회원가입에 성공했습니다!');
+      navigation.navigate('Login'); // 로그인 화면으로 이동
     } catch (error) {
-      console.error('회원가입 중 오류 발생:', error);
+      console.error('회원가입 오류:', error.response || error.message);
       Alert.alert('오류', '회원가입에 실패했습니다.');
     }
   };
@@ -90,32 +96,27 @@ const SignUp = () => {
       <Text style={styles.label}>아이디</Text>
       <TextInput
         style={styles.input}
-        mode='outlined'
+        mode="outlined"
         value={id}
         onChangeText={setId}
-        placeholder='아이디를 입력하세요'
-        returnKeyType='next'
-        onSubmitEditing={() => this.emailInput.focus()}
+        placeholder="아이디를 입력하세요"
+        returnKeyType="next"
+        onSubmitEditing={() => phoneInputRef.current?.focus()}
       />
       <View style={styles.emailContainer}>
         <View style={styles.emailInputContainer}>
           <Text style={styles.label}>이메일</Text>
           <TextInput
-            ref={(input) => {
-              this.emailInput = input;
-            }}
             style={styles.input}
-            mode='outlined'
+            mode="outlined"
             value={email}
             onChangeText={setEmail}
-            placeholder='이메일을 입력하세요'
-            keyboardType='email-address'
-            returnKeyType='next'
-            onSubmitEditing={() => this.phoneInput.focus()}
+            placeholder="이메일을 입력하세요"
+            keyboardType="email-address"
           />
         </View>
         <Button
-          mode='contained'
+          mode="contained"
           onPress={sendEmailCertification}
           style={styles.emailButton}
         >
@@ -127,15 +128,14 @@ const SignUp = () => {
           <Text style={styles.label}>인증 번호</Text>
           <TextInput
             style={styles.input}
-            mode='outlined'
+            mode="outlined"
             value={certificationNumber}
             onChangeText={setCertificationNumber}
-            placeholder='인증 번호를 입력하세요'
-            returnKeyType='next'
-            onSubmitEditing={() => this.passwordInput.focus()}
+            placeholder="인증 번호를 입력하세요"
+            returnKeyType="next"
           />
           <Button
-            mode='contained'
+            mode="contained"
             onPress={checkCertification}
             style={styles.verifyButton}
           >
@@ -145,37 +145,28 @@ const SignUp = () => {
       )}
       <Text style={styles.label}>비밀번호</Text>
       <TextInput
-        ref={(input) => {
-          this.passwordInput = input;
-        }}
         style={styles.input}
-        mode='outlined'
+        mode="outlined"
         value={password}
         onChangeText={setPassword}
-        placeholder='비밀번호를 입력하세요'
+        placeholder="비밀번호를 입력하세요"
         secureTextEntry
-        returnKeyType='next'
-        onSubmitEditing={() => this.confirmPasswordInput.focus()}
+        returnKeyType="next"
       />
       {!isPasswordValid && (
         <Text style={styles.errorMessage}>
-          비밀번호는 최소 8자에서 13자의 길이이며 대소문자와 숫자가 모두
-          포함되어야 합니다.
+          비밀번호는 최소 8자에서 13자이며, 대소문자와 숫자가 포함되어야 합니다.
         </Text>
       )}
       <Text style={styles.label}>비밀번호 확인</Text>
       <TextInput
-        ref={(input) => {
-          this.confirmPasswordInput = input;
-        }}
         style={styles.input}
-        mode='outlined'
+        mode="outlined"
         value={confirmPassword}
         onChangeText={setConfirmPassword}
-        placeholder='비밀번호를 다시 입력하세요'
+        placeholder="비밀번호를 다시 입력하세요"
         secureTextEntry
-        returnKeyType='next'
-        onSubmitEditing={() => this.phoneNumberInput.focus()}
+        returnKeyType="next"
       />
       {confirmPassword.length > 0 && (
         <Text
@@ -191,19 +182,17 @@ const SignUp = () => {
       )}
       <Text style={styles.label}>전화번호</Text>
       <TextInput
-        ref={(input) => {
-          this.phoneNumberInput = input;
-        }}
+        ref={phoneInputRef}
         style={styles.input}
-        mode='outlined'
+        mode="outlined"
         value={phoneNumber}
         onChangeText={setPhoneNumber}
-        placeholder='전화번호를 입력하세요'
-        keyboardType='phone-pad'
-        returnKeyType='done'
+        placeholder="전화번호를 입력하세요"
+        keyboardType="phone-pad"
+        returnKeyType="done"
         onSubmitEditing={signUp}
       />
-      <Button mode='contained' onPress={signUp} style={styles.signUpButton}>
+      <Button mode="contained" onPress={signUp} style={styles.signUpButton}>
         회원가입
       </Button>
     </View>
