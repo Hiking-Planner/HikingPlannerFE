@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import colors from './sub/colors';
-import { WINDOW_HEIGHT } from './sub/dimensions';
-import IconButton from './sub/IconButton';
+import colors from '../sub/colors';
+import { WINDOW_HEIGHT } from '../sub/dimensions';
+import IconButton from '../sub/IconButton';
 
 export default function Header() {
   return (

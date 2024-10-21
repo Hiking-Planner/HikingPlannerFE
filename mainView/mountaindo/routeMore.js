@@ -23,7 +23,7 @@ export default function RouteMore({ route }) {
     const fetchCoordinates = async () => {
       try {
         const response = await fetch(
-          `http://ec2-3-143-125-20.us-east-2.compute.amazonaws.com:8080/api/v1/auth/getTrailData/${trail_id}`
+          `http://3.34.159.30:8080/api/v1/auth/getTrailData/${trail_id}`
         );
         const data = await response.json();
 

@@ -98,7 +98,7 @@ const Route = ({ mountainId, onRoutesFetched }) => {
     const fetchRoutes = async () => {
       try {
         const response = await fetch(
-          `http://ec2-3-143-125-20.us-east-2.compute.amazonaws.com:8080/api/v1/auth/getAllTrails/${mountainId}`
+          `http://3.34.159.30:8080/api/v1/auth/getAllTrails/${mountainId}`
         );
         const data = await response.json();
 

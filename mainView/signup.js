@@ -19,7 +19,7 @@ const SignUp = () => {
   const sendEmailCertification = async () => {
     try {
       await axios.post(
-        'http://ec2-3-143-125-20.us-east-2.compute.amazonaws.com:8080/api/v1/auth/email-certification',
+        'http://3.34.159.30:8080/api/v1/auth/email-certification',
         {
           id: id,
           email: email,
@@ -36,7 +36,7 @@ const SignUp = () => {
   const checkCertification = async () => {
     try {
       await axios.post(
-        'http://ec2-3-143-125-20.us-east-2.compute.amazonaws.com:8080/api/v1/auth/check-certification',
+        'http://3.34.159.30:8080/api/v1/auth/check-certification',
         {
           id: id,
           email: email,
@@ -64,7 +64,7 @@ const SignUp = () => {
 
     try {
       await axios.post(
-        'http://ec2-3-143-125-20.us-east-2.compute.amazonaws.com:8080/api/v1/auth/sign-up',
+        'http://3.34.159.30:8080/api/v1/auth/sign-up',
         {
           id: id,
           password: password,

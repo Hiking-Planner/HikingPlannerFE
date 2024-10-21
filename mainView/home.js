@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, ScrollView, Image, StyleSheet } from 'react-native';
 import { WINDOW_WIDTH, WINDOW_HEIGHT } from './sub/dimensions';
-import Header from './header';
+import Header from './Header/header';
 import Search from './searchSection';
 import CategoryMountain from './mountaindo/categorymount';
 import Footer from './footer';

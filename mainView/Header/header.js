@@ -1,15 +1,15 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet } from 'react-native';
-import colors from './sub/colors';
-import { WINDOW_WIDTH, WINDOW_HEIGHT } from './sub/dimensions';
-import IconButton from './sub/IconButton';
+import colors from '../sub/colors';
+import { WINDOW_WIDTH, WINDOW_HEIGHT } from '../sub/dimensions';
+import IconButton from '../sub/IconButton';
 import { useNavigation } from '@react-navigation/native';
 
 export default function Header() {
   const navigation = useNavigation();
   return (
     <View style={styles.header}>
-      <Image source={require('../assets/logo.png')} style={styles.logo} />
+      <Image source={require('../../assets/logo.png')} style={styles.logo} />
       <Text style={styles.textLogo}>Hiking Planner</Text>
       <View style={styles.btns}>
         <IconButton

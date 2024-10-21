@@ -8,14 +8,17 @@ import {
   StyleSheet,
 } from 'react-native';
 import { WINDOW_WIDTH, WINDOW_HEIGHT } from './sub/dimensions';
-import Header from './searchheader';
+import Header from './Header/searchheader';
 import Footer from './footer';
+import { useNavigation } from '@react-navigation/native'; // useNavigation 훅 가져오기
 
 export default function Mypage() {
+  const navigation = useNavigation(); // navigation 객체 생성
+
   return (
     <View style={styles.container}>
       <View style={styles.wrapper}>
-        <Header></Header>
+        <Header />
         <ScrollView
           showsVerticalScrollIndicator={false}
           style={styles.homeScroll}
@@ -23,9 +26,7 @@ export default function Mypage() {
           contentInset={{ bottom: 300 }}
         >
           <TouchableOpacity
-            onPress={() => {
-              /* 로그인 및 회원가입 페이지로 이동하는 함수 호출 */
-            }}
+            onPress={() => navigation.navigate('Login')} // Login 페이지로 이동
           >
             <View style={styles.userContainer}>
               <Image
@@ -144,7 +145,7 @@ export default function Mypage() {
             </TouchableOpacity>
           </View>
         </ScrollView>
-        <Footer></Footer>
+        <Footer />
       </View>
     </View>
   );
@@ -162,14 +163,6 @@ const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
     paddingBottom: WINDOW_HEIGHT * 0.1,
-  },
-  bannerScroll: {
-    height: WINDOW_HEIGHT * 0.22,
-    marginTop: 15,
-  },
-  banner: {
-    width: WINDOW_WIDTH,
-    height: WINDOW_HEIGHT * 0.22,
   },
   userContainer: {
     flexDirection: 'row',
@@ -209,19 +202,18 @@ const styles = StyleSheet.create({
   },
   menuItem: {
     flexDirection: 'row',
-    alignItems: 'left',
+    alignItems: 'center',
     marginBottom: 5,
     marginLeft: 5,
   },
   menuText: {
     fontSize: 16,
     color: 'black',
-    alignItems: 'baseline',
   },
   arrow: {
     fontSize: 16,
     color: 'black',
-    alignItems: 'flex-end',
+    marginLeft: 'auto',
   },
   icon: {
     width: 20,

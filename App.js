@@ -12,13 +12,14 @@ import Login from './mainView/login';
 import Signup from './mainView/signup';
 import Mountain from './mainView/mountaindo/mountain';
 import Commu from './mainView/commu';
+import PostDetail from './mainView/post_detail';
 import Mypage from './mainView/mypage';
 import RouteMore from './mainView/mountaindo/routeMore';
 import { HikingMapView } from './mainView/mapdo/mapView';
 import AllMountain from './mainView/mountaindo/allMountains';
 import CategoryMountain from './mainView/mountaindo/categorymount';
 import Route from './mainView/scrapdo/route';
-import Header from './mainView/header';
+import Header from './mainView/Header/header';
 import ScrapMore from './mainView/scrapdo/scrapMore';
 import SearchAdd from './mainView/searchAdd';
 import MoreMountain from './mainView/mountaindo/moreMountain';
@@ -34,7 +35,7 @@ function App() {
           headerShown: false, // 상단 헤더 숨기기
           cardStyleInterpolator: CardStyleInterpolators.forNoAnimation,
         }}
-        initialRouteName='Start'
+        initialRouteName='Commu'
       >
         <Stack.Screen name='Home' component={Home} />
         <Stack.Screen name='Start' component={Start} />
@@ -43,6 +44,7 @@ function App() {
         <Stack.Screen name='Signup' component={Signup} />
         <Stack.Screen name='Mountain' component={Mountain} />
         <Stack.Screen name='Commu' component={Commu} />
+        <Stack.Screen name="PostDetail" component={PostDetail} />
         <Stack.Screen name='Mypage' component={Mypage} />
         <Stack.Screen name='AllMountain' component={AllMountain} />
         <Stack.Screen name='CategoryMountain' component={CategoryMountain} />
