@@ -2,27 +2,33 @@ import React, { useState, useRef } from 'react';
 import { View, StyleSheet, Alert, Image, Text, Keyboard } from 'react-native';
 import { TextInput, Button } from 'react-native-paper';
 import colors from './sub/colors';
-import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
+import { basicAxios } from './api/axios'; // basicAxios 사용
+import AsyncStorage from '@react-native-async-storage/async-storage'; // AsyncStorage 임포트
 
 const Login = () => {
   const [id, setId] = useState('');
   const [password, setPassword] = useState('');
   const navigation = useNavigation();
-  const passwordInputRef = useRef(null); // 비밀번호 입력 필드 참조
-  const loginButtonRef = useRef(null); // 로그인 버튼 참조
+  const passwordInputRef = useRef(null);
 
   // 로그인 요청 함수
   const signIn = async () => {
     try {
-      const response = await axios.post(
-        'http://3.34.159.30:8080/api/v1/auth/sign-in',
-        { id: id, password: password }
-      );
-      // 로그인 성공 시 홈 화면으로 이동
-      navigation.navigate('Home');
+      const response = await basicAxios.post('/api/v1/auth/sign-in', {
+        id: id,
+        password: password,
+      });
+
+      const { accessToken } = response.data; // 응답에서 액세스 토큰 추출
+
+      // 액세스 토큰을 AsyncStorage에 저장
+      await AsyncStorage.setItem('accessToken', accessToken);
+
+      Alert.alert('성공', '로그인에 성공했습니다!');
+      navigation.navigate('Home'); // 로그인 후 홈 화면으로 이동
     } catch (error) {
-      console.error('Error signing in:', error);
+      console.error('로그인 실패:', error.response || error.message);
       Alert.alert('로그인 실패', '사용자 정보가 일치하지 않습니다!');
     }
   };
@@ -39,8 +45,8 @@ const Login = () => {
         value={id}
         onChangeText={setId}
         placeholder="아이디"
-        returnKeyType="next" // 키보드에서 '다음' 버튼 표시
-        onSubmitEditing={() => passwordInputRef.current?.focus()} // '다음'을 누르면 비밀번호 필드로 이동
+        returnKeyType="next"
+        onSubmitEditing={() => passwordInputRef.current?.focus()} // 다음 필드로 이동
       />
 
       {/* 비밀번호 입력 필드 */}
@@ -52,20 +58,15 @@ const Login = () => {
         onChangeText={setPassword}
         placeholder="비밀번호"
         secureTextEntry
-        returnKeyType="done" // 키보드에서 '완료' 버튼 표시
+        returnKeyType="done"
         onSubmitEditing={() => {
           Keyboard.dismiss(); // 키보드 닫기
-          signIn(); // '완료' 누르면 로그인 요청
+          signIn(); // 로그인 요청
         }}
       />
 
       {/* 로그인 버튼 */}
-      <Button
-        mode="contained"
-        onPress={signIn}
-        style={styles.loginButton}
-        ref={loginButtonRef} // 버튼 참조
-      >
+      <Button mode="contained" onPress={signIn} style={styles.loginButton}>
         로그인
       </Button>
 
