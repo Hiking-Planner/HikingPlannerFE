@@ -13,7 +13,7 @@ import Signup from './mainView/signup';
 import Mountain from './mainView/mountaindo/mountain';
 import Commu from './mainView/commu';
 import PostDetail from './mainView/post_detail';
-import Mypage from './mainView/mypage';
+import Mypage from './mainView/mypage/mypage';
 import RouteMore from './mainView/mountaindo/routeMore';
 import { HikingMapView } from './mainView/mapdo/mapView';
 import AllMountain from './mainView/mountaindo/allMountains';
@@ -24,6 +24,9 @@ import ScrapMore from './mainView/scrapdo/scrapMore';
 import SearchAdd from './mainView/searchAdd';
 import MoreMountain from './mainView/mountaindo/moreMountain';
 import MountainMainApi from './mainView/mountaindo/mountainMainApi';
+import MyContent from './mainView/mypage/mycontent';
+import RecordDetail from './mainView/mypage/recordDetail';
+import MyProfile from './mainView/mypage/myProfile';
 
 const Stack = createStackNavigator();
 
@@ -44,7 +47,7 @@ function App() {
         <Stack.Screen name='Signup' component={Signup} />
         <Stack.Screen name='Mountain' component={Mountain} />
         <Stack.Screen name='Commu' component={Commu} />
-        <Stack.Screen name="PostDetail" component={PostDetail} />
+        <Stack.Screen name='PostDetail' component={PostDetail} />
         <Stack.Screen name='Mypage' component={Mypage} />
         <Stack.Screen name='AllMountain' component={AllMountain} />
         <Stack.Screen name='CategoryMountain' component={CategoryMountain} />
@@ -56,6 +59,9 @@ function App() {
         <Stack.Screen name='SearchAdd' component={SearchAdd} />
         <Stack.Screen name='MoreMountain' component={MoreMountain} />
         <Stack.Screen name='MountainMainApi' component={MountainMainApi} />
+        <Stack.Screen name='MyContent' component={MyContent} />
+        <Stack.Screen name='RecordDetail' component={RecordDetail} />
+        <Stack.Screen name='MyProfile' component={MyProfile} />
       </Stack.Navigator>
     </NavigationContainer>
   );
