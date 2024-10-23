@@ -7,18 +7,17 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from 'react-native';
-import { WINDOW_WIDTH, WINDOW_HEIGHT } from './sub/dimensions';
-import Header from './Header/searchheader';
-import Footer from './footer';
-import { useNavigation } from '@react-navigation/native'; // useNavigation 훅 가져오기
+import { WINDOW_WIDTH, WINDOW_HEIGHT } from '../sub/dimensions';
+import { useNavigation } from '@react-navigation/native';
+import Header from '../Header/searchheader';
+import Footer from '../footer';
 
 export default function Mypage() {
-  const navigation = useNavigation(); // navigation 객체 생성
-
+  const navigation = useNavigation();
   return (
     <View style={styles.container}>
       <View style={styles.wrapper}>
-        <Header />
+        <Header></Header>
         <ScrollView
           showsVerticalScrollIndicator={false}
           style={styles.homeScroll}
@@ -26,11 +25,13 @@ export default function Mypage() {
           contentInset={{ bottom: 300 }}
         >
           <TouchableOpacity
-            onPress={() => navigation.navigate('Login')} // Login 페이지로 이동
+            onPress={() => {
+              /* 로그인 및 회원가입 페이지로 이동하는 함수 호출 */
+            }}
           >
             <View style={styles.userContainer}>
               <Image
-                source={require('../assets/icon/user.png')}
+                source={require('../../assets/icon/user.png')}
                 style={styles.userIcon}
               />
               <View style={styles.textContainer}>
@@ -45,9 +46,12 @@ export default function Mypage() {
             <View style={styles.header}>
               <Text style={styles.headerText}>마이 컨텐츠</Text>
             </View>
-            <TouchableOpacity style={styles.menuItem}>
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => navigation.navigate('MyContent')}
+            >
               <Image
-                source={require('../assets/icon/course_icon.png')}
+                source={require('../../assets/icon/course_icon.png')}
                 style={styles.icon}
               />
               <Text style={styles.menuText}>나의 코스</Text>
@@ -55,7 +59,7 @@ export default function Mypage() {
             </TouchableOpacity>
             <TouchableOpacity style={styles.menuItem}>
               <Image
-                source={require('../assets/icon/hiking_icon.png')}
+                source={require('../../assets/icon/hiking_icon.png')}
                 style={styles.icon}
               />
               <Text style={styles.menuText}>등산 기록</Text>
@@ -63,7 +67,7 @@ export default function Mypage() {
             </TouchableOpacity>
             <TouchableOpacity style={styles.menuItem}>
               <Image
-                source={require('../assets/icon/write_icon.png')}
+                source={require('../../assets/icon/write_icon.png')}
                 style={styles.icon}
               />
               <Text style={styles.menuText}>작성한 글</Text>
@@ -71,7 +75,7 @@ export default function Mypage() {
             </TouchableOpacity>
             <TouchableOpacity style={styles.menuItem}>
               <Image
-                source={require('../assets/icon/comment_icon.png')}
+                source={require('../../assets/icon/comment_icon.png')}
                 style={styles.icon}
               />
               <Text style={styles.menuText}>나의 댓글</Text>
@@ -85,7 +89,7 @@ export default function Mypage() {
             </View>
             <TouchableOpacity style={styles.menuItem}>
               <Image
-                source={require('../assets/icon/notification_icon.png')}
+                source={require('../../assets/icon/notification_icon.png')}
                 style={styles.icon}
               />
               <Text style={styles.menuText}>공지 사항</Text>
@@ -93,7 +97,7 @@ export default function Mypage() {
             </TouchableOpacity>
             <TouchableOpacity style={styles.menuItem}>
               <Image
-                source={require('../assets/icon/question_icon.png')}
+                source={require('../../assets/icon/question_icon.png')}
                 style={styles.icon}
               />
               <Text style={styles.menuText}>1:1 문의</Text>
@@ -107,7 +111,7 @@ export default function Mypage() {
             </View>
             <TouchableOpacity style={styles.menuItem}>
               <Image
-                source={require('../assets/icon/policy_icon.png')}
+                source={require('../../assets/icon/policy_icon.png')}
                 style={styles.icon}
               />
               <Text style={styles.menuText}>이용 약관</Text>
@@ -115,7 +119,7 @@ export default function Mypage() {
             </TouchableOpacity>
             <TouchableOpacity style={styles.menuItem}>
               <Image
-                source={require('../assets/icon/privacy_icon.png')}
+                source={require('../../assets/icon/privacy_icon.png')}
                 style={styles.icon}
               />
               <Text style={styles.menuText}>개인정보 처리 방침</Text>
@@ -129,7 +133,7 @@ export default function Mypage() {
             </View>
             <TouchableOpacity style={styles.menuItem}>
               <Image
-                source={require('../assets/icon/logout_icon.png')}
+                source={require('../../assets/icon/logout_icon.png')}
                 style={styles.icon}
               />
               <Text style={styles.menuText}>로그 아웃</Text>
@@ -137,7 +141,7 @@ export default function Mypage() {
             </TouchableOpacity>
             <TouchableOpacity style={styles.menuItem}>
               <Image
-                source={require('../assets/icon/delete_icon.png')}
+                source={require('../../assets/icon/delete_icon.png')}
                 style={styles.icon}
               />
               <Text style={styles.menuText}>회원 탈퇴</Text>
@@ -145,7 +149,7 @@ export default function Mypage() {
             </TouchableOpacity>
           </View>
         </ScrollView>
-        <Footer />
+        <Footer></Footer>
       </View>
     </View>
   );
@@ -163,6 +167,14 @@ const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
     paddingBottom: WINDOW_HEIGHT * 0.1,
+  },
+  bannerScroll: {
+    height: WINDOW_HEIGHT * 0.22,
+    marginTop: 15,
+  },
+  banner: {
+    width: WINDOW_WIDTH,
+    height: WINDOW_HEIGHT * 0.22,
   },
   userContainer: {
     flexDirection: 'row',
@@ -202,18 +214,19 @@ const styles = StyleSheet.create({
   },
   menuItem: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'left',
     marginBottom: 5,
     marginLeft: 5,
   },
   menuText: {
     fontSize: 16,
     color: 'black',
+    alignItems: 'baseline',
   },
   arrow: {
     fontSize: 16,
     color: 'black',
-    marginLeft: 'auto',
+    alignItems: 'flex-end',
   },
   icon: {
     width: 20,
