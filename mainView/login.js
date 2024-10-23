@@ -3,8 +3,8 @@ import { View, StyleSheet, Alert, Image, Text, Keyboard } from 'react-native';
 import { TextInput, Button } from 'react-native-paper';
 import colors from './sub/colors';
 import { useNavigation } from '@react-navigation/native';
-import { basicAxios } from './api/axios'; // basicAxios 사용
-import AsyncStorage from '@react-native-async-storage/async-storage'; // AsyncStorage 임포트
+import { basicAxios } from './api/axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Login = () => {
   const [id, setId] = useState('');
@@ -16,17 +16,22 @@ const Login = () => {
   const signIn = async () => {
     try {
       const response = await basicAxios.post('/api/v1/auth/sign-in', {
-        id: id,
-        password: password,
+        id,
+        password,
       });
 
-      const { accessToken } = response.data; // 응답에서 액세스 토큰 추출
+      const { accessToken } = response.data || {}; // 응답에서 액세스 토큰 추출
 
-      // 액세스 토큰을 AsyncStorage에 저장
-      await AsyncStorage.setItem('accessToken', accessToken);
-
-      Alert.alert('성공', '로그인에 성공했습니다!');
-      navigation.navigate('Home'); // 로그인 후 홈 화면으로 이동
+      if (accessToken) {
+        // 액세스 토큰을 AsyncStorage에 저장
+        await AsyncStorage.setItem('accessToken', accessToken);
+        Alert.alert('성공', '로그인에 성공했습니다!');
+        navigation.navigate('Home'); // 로그인 후 홈 화면으로 이동
+      } else {
+        // 토큰이 없을 경우 처리
+        await AsyncStorage.removeItem('accessToken');
+        Alert.alert('로그인 실패', '유효한 토큰을 받지 못했습니다.');
+      }
     } catch (error) {
       console.error('로그인 실패:', error.response || error.message);
       Alert.alert('로그인 실패', '사용자 정보가 일치하지 않습니다!');
