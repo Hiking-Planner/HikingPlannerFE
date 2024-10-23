@@ -224,11 +224,39 @@ export default function Commu() {
           <View style={styles.modalContainer}>
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
               <View style={styles.modalContent}>
+              <View style={styles.menuIconContainer}>
+                  <TouchableOpacity onPress={toggleMenu} style={styles.menuIcon}>
+                    <Icon name="dots-vertical" size={24} color="#000" />
+                  </TouchableOpacity>
+                </View>
                 <Image source={{ uri: selectedPost?.imageUrl }} style={styles.postImage} />
                 <View style={styles.modalTextContainer}>
                   <Text style={styles.postTitle}>{selectedPost?.title}</Text>
                   <Text style={styles.postText}>{selectedPost?.content}</Text>
-
+                  {isMenuVisible && (
+                    <Animated.View
+                      style={[
+                        styles.iconContainer,
+                        {
+                          transform: [
+                            {
+                              translateY: slideAnim.interpolate({
+                                inputRange: [0, 1],
+                                outputRange: [0, 5], 
+                              }),
+                            },
+                          ],
+                        },
+                      ]}
+                    >
+                      <TouchableOpacity onPress={() => setPostModalVisible(false)}>
+                        <Icon name="pencil" size={24} color="#000" />
+                      </TouchableOpacity>
+                      <TouchableOpacity onPress={() => deletePost(selectedPost.boardId)}>
+                        <Icon name="delete" size={24} color="red" />
+                      </TouchableOpacity>
+                    </Animated.View>
+                  )}
                   {/* 댓글 목록 */}
                   <FlatList
                     data={comments}
@@ -388,21 +416,27 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginTop: 15,
   },
-  iconContainer: {
-    position: 'absolute',
-    right: 20,
-    top: 75,
-    zIndex: 10, // 슬라이드 메뉴도 상위에 배치
-  },
-  menuIcon: {
-    padding: 5, // 클릭 영역을 넓게 설정
-  },
   menuIconContainer: {
     position: 'absolute',
-    top: 5,
-    right: 15,
-    zIndex: 10, // 이미지보다 상위에 배치
-  },commentList: {
+    top: 10,  // 모달 상단에서 조금 떨어진 위치
+    right: 10,
+    zIndex: 10,
+  },
+  menuIcon: {
+    padding: 5, // 클릭 영역 확장
+  },
+  iconContainer: {
+    position: 'absolute',
+    top: 30,  // 말줄임표 바로 밑에 맞춤
+    right: 10,
+    zIndex: 20,  // 다른 요소들 위에 배치
+    backgroundColor: '#fff',
+    borderRadius: 5,
+    padding: 5,
+    elevation: 5,  // 그림자 효과
+    flexDirection: 'row',  // 아이콘을 가로로 정렬
+  },
+  commentList: {
     marginTop: 10,
   },
   commentContainer: {
