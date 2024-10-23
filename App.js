@@ -12,8 +12,7 @@ import Login from './mainView/login';
 import Signup from './mainView/signup';
 import Mountain from './mainView/mountaindo/mountain';
 import Commu from './mainView/commu';
-import PostDetail from './mainView/post_detail';
-import Mypage from './mainView/mypage/mypage';
+import Mypage from './mainView/mypage';
 import RouteMore from './mainView/mountaindo/routeMore';
 import { HikingMapView } from './mainView/mapdo/mapView';
 import AllMountain from './mainView/mountaindo/allMountains';
@@ -47,7 +46,6 @@ function App() {
         <Stack.Screen name='Signup' component={Signup} />
         <Stack.Screen name='Mountain' component={Mountain} />
         <Stack.Screen name='Commu' component={Commu} />
-        <Stack.Screen name='PostDetail' component={PostDetail} />
         <Stack.Screen name='Mypage' component={Mypage} />
         <Stack.Screen name='AllMountain' component={AllMountain} />
         <Stack.Screen name='CategoryMountain' component={CategoryMountain} />

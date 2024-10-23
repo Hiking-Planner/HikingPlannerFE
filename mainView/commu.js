@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
-  ScrollView,
+  FlatList,
   StyleSheet,
   Text,
   Image,
@@ -9,6 +9,8 @@ import {
   Modal,
   TextInput,
   Alert,
+  Animated,
+  Easing,
   TouchableWithoutFeedback,
   Keyboard,
 } from 'react-native';
@@ -18,26 +20,61 @@ import Header from './Header/commu_header';
 import { WINDOW_WIDTH, WINDOW_HEIGHT } from './sub/dimensions';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import * as ImagePicker from 'expo-image-picker';
-import axios from 'axios';
+import { basicAxios, authAxios } from './api/axios';
 
 export default function Commu() {
   const navigation = useNavigation();
   const [isModalVisible, setModalVisible] = useState(false);
-  const [isPostVisible, setPostVisible] = useState(false);
+  const [isPostModalVisible, setPostModalVisible] = useState(false);
+  const [selectedPost, setSelectedPost] = useState(null);
+  const [posts, setPosts] = useState([]);
+  const [comments, setComments] = useState([]); // 댓글 상태 추가
+  const [newComment, setNewComment] = useState(''); // 새 댓글 입력 상태
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [images, setImages] = useState([]);
-  const [comment, setComment] = useState('');
-  const [comments, setComments] = useState([]);
+  const [slideAnim] = useState(new Animated.Value(0)); 
+  const [isMenuVisible, setIsMenuVisible] = useState(false);
 
-  const examplePost = {
-    id: 1,
-    title: '첫 번째 게시글',
-    content: '오늘도 즐거운 산행! 다음엔 또 가야지!',
-    images: [
-      { uri: 'https://via.placeholder.com/150' },
-      { uri: 'https://via.placeholder.com/150' },
-    ],
+  // 게시물 불러오기
+  const fetchPosts = async () => {
+    try {
+      const response = await basicAxios.get('/api/v1/auth/boards');
+      setPosts(response.data || []);
+    } catch (error) {
+      console.error('게시물 불러오기 실패:', error.message);
+      Alert.alert('오류', '게시물을 불러오는 데 실패했습니다.');
+    }
+  };
+
+  useEffect(() => {
+    fetchPosts();
+  }, []);
+
+  // 댓글 불러오기
+  const fetchComments = async (postId) => {
+    try {
+      const response = await basicAxios.get(`/api/v1/auth/comments?postId=${postId}`);
+      setComments(response.data || []);
+    } catch (error) {
+      console.error('댓글 불러오기 실패:', error.message);
+    }
+  };
+
+  // 댓글 작성
+  const submitComment = async () => {
+    try {
+      await authAxios.post('/api/v1/auth/comments', {
+        postId: selectedPost.boardId,
+        content: newComment,
+      });
+      Alert.alert('성공', '댓글이 작성되었습니다!');
+      setNewComment('');
+      fetchComments(selectedPost.boardId); // 댓글 새로고침
+    } catch (error) {
+      console.error('댓글 작성 실패:', error.message);
+      Alert.alert('오류', '댓글 작성에 실패했습니다.');
+    }
   };
 
   const selectImages = async () => {
@@ -54,48 +91,83 @@ export default function Commu() {
 
   const submitPost = async () => {
     try {
-      await axios.post('http://3.34.159.30:8080/api/v1/auth/boards', {
-        title: title,
-        content: content,
+      await authAxios.post('/api/v1/auth/boards', {
+        title,
+        content,
         mountainName: 'none',
       });
-
       Alert.alert('성공', '게시글이 작성되었습니다!');
       setModalVisible(false);
+      fetchPosts();
       setTitle('');
       setContent('');
       setImages([]);
     } catch (error) {
-      console.error('게시글 작성 실패:', error.response || error.message);
+      console.error('게시글 작성 실패:', error.message);
       Alert.alert('오류', '게시글 작성에 실패했습니다.');
     }
   };
 
-  const submitComment = async () => {
+  const deletePost = async (postId) => {
     try {
-      const response = await axios.post('http://3.34.159.30:8080/api/v1/auth/comments', {
-        postId: examplePost.id,
-        content: comment,
-      });
-
-      setComments([...comments, { content: comment }]);
-      setComment('');
-      Alert.alert('성공', '댓글이 작성되었습니다!');
+      await authAxios.delete(`/api/v1/auth/boards/${postId}`);
+      Alert.alert('성공', '게시물이 삭제되었습니다.');
+      setPostModalVisible(false);
+      fetchPosts();
     } catch (error) {
-      console.error('댓글 작성 실패:', error.response || error.message);
-      Alert.alert('오류', '댓글 작성에 실패했습니다.');
+      console.error('게시물 삭제 실패:', error.message);
+      Alert.alert('오류', '게시물 삭제에 실패했습니다.');
     }
   };
+
+  const openPostModal = (post) => {
+    setSelectedPost(post);
+    setPostModalVisible(true);
+    fetchComments(post.boardId); // 댓글 불러오기
+    setIsMenuVisible(false);
+  };
+
+  const toggleSlide = () => {
+    const toValue = slideAnim._value === 0 ? 1 : 0;
+    Animated.timing(slideAnim, {
+      toValue,
+      duration: 300,
+      easing: Easing.linear,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const toggleMenu = () => {
+    setIsMenuVisible((prev) => !prev);
+  };
+
+  const renderPost = ({ item }) => (
+    <TouchableOpacity onPress={() => openPostModal(item)} style={styles.postContainer}>
+      <Image source={{ uri: item.imageUrl }} style={styles.postImage} />
+      <View style={styles.postContent}>
+        <Text style={styles.postTitle}>{item.title}</Text>
+        <Text style={styles.postText}>{item.content}</Text>
+        <Text style={styles.mountainName}>산 이름: {item.mountainName}</Text>
+      </View>
+    </TouchableOpacity>
+  );
+
+  const renderComment = ({ item }) => (
+    <View style={styles.commentContainer}>
+      <Text style={styles.commentText}>{item.content}</Text>
+    </View>
+  );
 
   return (
     <View style={styles.container}>
       <Header />
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        <TouchableOpacity onPress={() => setPostVisible(true)} style={styles.postContainer}>
-          <Text style={styles.postTitle}>{examplePost.title}</Text>
-          <Text style={styles.postContent}>{examplePost.content}</Text>
-        </TouchableOpacity>
-      </ScrollView>
+
+      <FlatList
+        data={posts}
+        keyExtractor={(item) => item.boardId.toString()}
+        renderItem={renderPost}
+        contentContainerStyle={styles.scrollView}
+      />
 
       <TouchableOpacity style={styles.createButton} onPress={() => setModalVisible(true)}>
         <Icon name="pencil" size={20} color="#fff" />
@@ -104,17 +176,15 @@ export default function Commu() {
 
       <Footer />
 
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={isModalVisible}
-        onRequestClose={() => setModalVisible(false)}
-      >
+      {/* 게시글 작성 모달 */}
+      <Modal animationType="slide" transparent visible={isModalVisible}>
         <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
           <View style={styles.modalContainer}>
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
               <View style={styles.modalContent}>
-                <Text style={styles.modalTitle}>게시글 작성</Text>
+                <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.closeButton}>
+                  <Icon name="close" size={24} color="#000" />
+                </TouchableOpacity>
                 <TextInput
                   style={styles.input}
                   placeholder="제목을 입력하세요"
@@ -126,17 +196,18 @@ export default function Commu() {
                   placeholder="내용을 입력하세요"
                   value={content}
                   onChangeText={setContent}
-                  multiline={true}
+                  multiline
                 />
-                <View style={styles.imagePreviewContainer}>
-                  {images.map((image, index) => (
-                    <Image key={index} source={{ uri: image.uri }} style={styles.imagePreview} />
-                  ))}
-                </View>
                 <TouchableOpacity style={styles.selectImageButton} onPress={selectImages}>
                   <Text style={styles.selectImageButtonText}>이미지 선택</Text>
                 </TouchableOpacity>
-                <View style={styles.modalButtons}>
+                <View style={styles.buttonRow}>
+                  <TouchableOpacity
+                    style={styles.cancelButton}
+                    onPress={() => setModalVisible(false)}
+                  >
+                    <Text style={styles.cancelButtonText}>취소</Text>
+                  </TouchableOpacity>
                   <TouchableOpacity style={styles.submitButton} onPress={submitPost}>
                     <Text style={styles.submitButtonText}>작성하기</Text>
                   </TouchableOpacity>
@@ -147,41 +218,38 @@ export default function Commu() {
         </TouchableWithoutFeedback>
       </Modal>
 
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={isPostVisible}
-        onRequestClose={() => setPostVisible(false)}
-      >
-        <TouchableWithoutFeedback onPress={() => setPostVisible(false)}>
+      {/* 게시글 상세 모달 */}
+      <Modal animationType="slide" transparent visible={isPostModalVisible}>
+        <TouchableWithoutFeedback onPress={() => setPostModalVisible(false)}>
           <View style={styles.modalContainer}>
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
               <View style={styles.modalContent}>
-                <Text style={styles.modalTitle}>{examplePost.title}</Text>
-                <Text style={styles.postDetailContent}>{examplePost.content}</Text>
-                <View style={styles.imagePreviewContainer}>
-                  {examplePost.images.map((image, index) => (
-                    <Image key={index} source={image} style={styles.imagePreview} />
-                  ))}
+                <Image source={{ uri: selectedPost?.imageUrl }} style={styles.postImage} />
+                <View style={styles.modalTextContainer}>
+                  <Text style={styles.postTitle}>{selectedPost?.title}</Text>
+                  <Text style={styles.postText}>{selectedPost?.content}</Text>
+
+                  {/* 댓글 목록 */}
+                  <FlatList
+                    data={comments}
+                    keyExtractor={(item) => item.commentId.toString()}
+                    renderItem={renderComment}
+                    style={styles.commentList}
+                  />
+
+                  {/* 댓글 입력 */}
+                  <View style={styles.commentInputContainer}>
+                    <TextInput
+                      style={styles.commentInput}
+                      placeholder="댓글을 입력하세요"
+                      value={newComment}
+                      onChangeText={setNewComment}
+                    />
+                    <TouchableOpacity onPress={submitComment} style={styles.commentButton}>
+                      <Text style={styles.commentButtonText}>작성</Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
-
-                <ScrollView style={styles.commentSection}>
-                  {comments.map((c, index) => (
-                    <Text key={index} style={styles.comment}>
-                      {c.content}
-                    </Text>
-                  ))}
-                </ScrollView>
-
-                <TextInput
-                  style={styles.commentInput}
-                  placeholder="댓글을 입력하세요"
-                  value={comment}
-                  onChangeText={setComment}
-                />
-                <TouchableOpacity style={styles.submitButton} onPress={submitComment}>
-                  <Text style={styles.submitButtonText}>댓글 작성</Text>
-                </TouchableOpacity>
               </View>
             </TouchableWithoutFeedback>
           </View>
@@ -220,11 +288,17 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#333',
   },
+  postImage: {
+    width: '100%',
+    height: 200,
+    borderRadius: 10,
+    marginTop: 10,
+  },
   createButton: {
     position: 'absolute',
     bottom: WINDOW_HEIGHT * 0.12,
     right: WINDOW_WIDTH * 0.05,
-    backgroundColor: '#A4D06F',
+    backgroundColor: '#0AE56A',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -254,11 +328,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 10,
     padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 5,
+    position: 'relative',
   },
   modalTitle: {
     fontSize: 18,
@@ -280,7 +350,7 @@ const styles = StyleSheet.create({
     marginRight: 5,
   },
   selectImageButton: {
-    backgroundColor: '#A4D06F',
+    backgroundColor: '#0AE56A',
     padding: 10,
     borderRadius: 5,
     alignItems: 'center',
@@ -296,7 +366,7 @@ const styles = StyleSheet.create({
     marginTop: 15,
   },
   submitButton: {
-    backgroundColor: '#A4D06F',
+    backgroundColor: '#0AE56A',
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 5,
@@ -306,14 +376,64 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   cancelButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
+    padding: 10,
+    backgroundColor: '#ccc',
     borderRadius: 5,
-    borderWidth: 1,
-    borderColor: '#ccc',
   },
   cancelButtonText: {
+    color: '#fff',
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 15,
+  },
+  iconContainer: {
+    position: 'absolute',
+    right: 20,
+    top: 75,
+    zIndex: 10, // 슬라이드 메뉴도 상위에 배치
+  },
+  menuIcon: {
+    padding: 5, // 클릭 영역을 넓게 설정
+  },
+  menuIconContainer: {
+    position: 'absolute',
+    top: 5,
+    right: 15,
+    zIndex: 10, // 이미지보다 상위에 배치
+  },commentList: {
+    marginTop: 10,
+  },
+  commentContainer: {
+    marginVertical: 5,
+    padding: 10,
+    backgroundColor: '#F0F0F0',
+    borderRadius: 5,
+  },
+  commentText: {
+    fontSize: 14,
     color: '#333',
   },
+  commentInputContainer: {
+    flexDirection: 'row',
+    marginTop: 10,
+  },
+  commentInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 5,
+    padding: 8,
+  },
+  commentButton: {
+    marginLeft: 10,
+    backgroundColor: '#0AE56A',
+    padding: 10,
+    borderRadius: 5,
+  },
+  commentButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
 });
-

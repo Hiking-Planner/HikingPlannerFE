@@ -15,10 +15,10 @@ export const basicAxios = axios.create({
 const getAccessToken = async () => {
   try {
     const token = await AsyncStorage.getItem('accessToken'); // 토큰 가져오기
-    return token || '';
+    return token || ''; // null 또는 undefined 시 빈 문자열 반환
   } catch (error) {
     console.error('토큰 가져오기 오류:', error);
-    return '';
+    return ''; // 오류 발생 시에도 빈 문자열 반환
   }
 };
 
@@ -36,7 +36,9 @@ authAxios.interceptors.request.use(
   async (config) => {
     const token = await getAccessToken(); // 토큰 가져오기
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`; // 토큰 헤더에 추가
+      config.headers.Authorization = `Bearer ${token}`; // 토큰이 있을 때만 헤더에 추가
+    } else {
+      console.warn('토큰이 없습니다. 인증이 필요한 요청입니다.');
     }
     return config;
   },
@@ -49,7 +51,10 @@ authAxios.interceptors.response.use(
   async (error) => {
     if (error.response && error.response.status === 401) {
       console.error('Unauthorized! Redirecting to login...');
-      // 로그아웃 처리 또는 로그인 페이지로 이동 처리
+      // 401 오류 발생 시 accessToken 제거
+      await AsyncStorage.removeItem('accessToken');
+      // 로그아웃 처리 또는 로그인 페이지로 이동 (예: React Navigation 사용)
+      // 예: navigation.navigate('Login');
     }
     return Promise.reject(error);
   }
