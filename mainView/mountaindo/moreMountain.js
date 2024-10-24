@@ -13,6 +13,7 @@ import { getMountains } from '../api/mountainService';
 import colors from '../sub/colors';
 import { WINDOW_HEIGHT } from '../sub/dimensions';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import { basicAxios } from '../api/axios';
 
 const MountainCard = ({ mountain }) => {
   const navigation = useNavigation();
@@ -23,7 +24,7 @@ const MountainCard = ({ mountain }) => {
       <View style={styles.card}>
         <Image
           source={{
-            uri: `http://3.34.159.30:8080/${mountain.image_info[0].img_url}`,
+            uri: `${basicAxios.defaults.baseURL}${mountain.image_info[0].img_url}.jpg`,
           }}
           style={styles.image}
         />

@@ -14,7 +14,7 @@ import * as Location from 'expo-location';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import colors from '../sub/colors';
 import { Picker } from '@react-native-picker/picker';
-import api from '../api/api'; // api 인스턴스 임포트
+import { basicAxios } from '../api/axios';
 
 const RoadWarningButton = ({ onSubmit }) => {
   const [modalVisible, setModalVisible] = useState(false);
@@ -69,9 +69,13 @@ const RoadWarningButton = ({ onSubmit }) => {
         })
       );
 
-      const response = await api.post('/api/v1/auth/trailReport', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      const response = await basicAxios.post(
+        '/api/v1/auth/trailReport',
+        formData,
+        {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        }
+      );
 
       console.log('Response:', response.data);
 

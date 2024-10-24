@@ -12,6 +12,7 @@ import colors from '../sub/colors';
 import { WINDOW_HEIGHT } from '../sub/dimensions';
 import { PROVIDER_GOOGLE } from 'react-native-maps';
 import { useNavigation } from '@react-navigation/native';
+import { basicAxios } from '../api/axios';
 
 export default function RouteMore({ route }) {
   const { trail_id, name, endPoint } = route.params;
@@ -22,10 +23,10 @@ export default function RouteMore({ route }) {
   useEffect(() => {
     const fetchCoordinates = async () => {
       try {
-        const response = await fetch(
-          `http://3.34.159.30:8080/api/v1/auth/getTrailData/${trail_id}`
+        const response = await basicAxios.get(
+          `/api/v1/auth/getTrailData/${trail_id}`
         );
-        const data = await response.json();
+        const data = response.data;
 
         // trailData를 파싱하여 좌표 배열로 변환
         const parsedCoordinates = JSON.parse(data.trailData);
@@ -116,7 +117,6 @@ export default function RouteMore({ route }) {
                 latitudeDelta: latitudeDelta,
                 longitudeDelta: longitudeDelta,
               }}
-              provider={PROVIDER_GOOGLE}
             >
               <Polyline
                 coordinates={convertedCoordinates}
