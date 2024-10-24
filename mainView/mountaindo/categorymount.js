@@ -12,6 +12,7 @@ import colors from '../sub/colors';
 import { WINDOW_WIDTH } from '../sub/dimensions';
 import { useNavigation } from '@react-navigation/native';
 import { getMountains } from '../api/mountainService';
+import { basicAxios } from '../api/axios';
 
 const CategorySection = ({ title, data }) => {
   const navigation = useNavigation();
@@ -40,7 +41,7 @@ const CategorySection = ({ title, data }) => {
             <View style={styles.mountView}>
               <Image
                 source={{
-                  uri: `http://3.34.159.30:8080/${item.image_info[0].img_url}`,
+                  uri: `${basicAxios.defaults.baseURL}${item.image_info[0].img_url}.jpg`,
                 }}
                 style={styles.mountImage}
               />

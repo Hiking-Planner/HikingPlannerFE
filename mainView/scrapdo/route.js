@@ -10,6 +10,7 @@ import IconButton from '../sub/IconButton';
 import colors from '../sub/colors';
 import { WINDOW_WIDTH } from '../sub/dimensions';
 import { useNavigation } from '@react-navigation/native';
+import { basicAxios } from '../api/axios';
 
 function getDifficultyColor(difficulty) {
   switch (difficulty) {
@@ -97,10 +98,10 @@ const Route = ({ mountainId, onRoutesFetched }) => {
   useEffect(() => {
     const fetchRoutes = async () => {
       try {
-        const response = await fetch(
-          `http://3.34.159.30:8080/api/v1/auth/getAllTrails/${mountainId}`
+        const response = await basicAxios.get(
+          `/api/v1/auth/getAllTrails/${mountainId}`
         );
-        const data = await response.json();
+        const data = response.data;
 
         // API 응답이 배열인지 확인
         if (Array.isArray(data)) {

@@ -13,6 +13,7 @@ import { WINDOW_HEIGHT } from '../sub/dimensions';
 import Route from '../scrapdo/route';
 import { useNavigation } from '@react-navigation/native';
 import MapView, { PROVIDER_GOOGLE, Marker } from 'react-native-maps';
+import { basicAxios } from '../api/axios';
 
 const AnimatedImageBackground =
   Animated.createAnimatedComponent(ImageBackground);
@@ -38,8 +39,15 @@ export default function MountainMainApi({ route }) {
     setRoutes(fetchedRoutes);
   }, []);
 
-  const handleRefresh = () => {
-    setRefreshKey((prevKey) => prevKey + 1); // refreshKey 업데이트
+  const handleRefresh = async () => {
+    try {
+      await basicAxios.get(
+        `/api/v1/auth/updatetrail?mountainid=${mountain.mountain_id}`
+      );
+      setRefreshKey((prevKey) => prevKey + 1);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (
@@ -47,7 +55,7 @@ export default function MountainMainApi({ route }) {
       <AnimatedImageBackground
         style={[styles.mountainImg, { height: headerHeight }]}
         source={{
-          uri: `http://3.34.159.30:8080/${mountain.image_info[0].img_url}`,
+          uri: `${basicAxios.defaults.baseURL}${mountain.image_info[0].img_url}.jpg`,
         }}
       >
         <View style={styles.wrapper}>
@@ -87,7 +95,6 @@ export default function MountainMainApi({ route }) {
             <Text style={styles.mapText}>{mountain.mountain_name} 지도</Text>
             <MapView
               style={styles.map}
-              provider={PROVIDER_GOOGLE}
               initialRegion={{
                 latitude,
                 longitude,
