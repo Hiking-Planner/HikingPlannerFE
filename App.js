@@ -12,7 +12,7 @@ import Login from './mainView/login';
 import Signup from './mainView/signup';
 import Mountain from './mainView/mountaindo/mountain';
 import Commu from './mainView/commu';
-import Mypage from './mainView/mypage';
+import Mypage from './mainView/mypage/mypage';
 import RouteMore from './mainView/mountaindo/routeMore';
 import { HikingMapView } from './mainView/mapdo/mapView';
 import AllMountain from './mainView/mountaindo/allMountains';
