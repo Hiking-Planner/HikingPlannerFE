@@ -1,5 +1,12 @@
 import React from 'react';
-import { View, ScrollView, Image, StyleSheet } from 'react-native';
+import {
+  View,
+  ScrollView,
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+  Linking,
+} from 'react-native';
 import { WINDOW_WIDTH, WINDOW_HEIGHT } from './sub/dimensions';
 import Header from './Header/header';
 import Search from './searchSection';
@@ -9,24 +16,20 @@ import Footer from './footer';
 export default function Home() {
   const banners = [
     {
-      image: require('../assets/banner/6kbanner.jpg'),
-    },
-    {
-      image: require('../assets/banner/mountbanner.jpg'),
-    },
-    {
-      image: require('../assets/banner/warnbanner.jpg'),
-    },
-    {
-      image: require('../assets/banner/pointbanner.jpg'),
+      image: require('../assets/banner/banner.png'),
+      url: 'https://github.com/Hiking-Planner',
     },
   ];
+
+  const handleBannerPress = (url) => {
+    Linking.openURL(url);
+  };
 
   return (
     <View style={styles.container}>
       <View style={styles.wrapper}>
-        <Header></Header>
-        <Search></Search>
+        <Header />
+        <Search />
         <ScrollView
           showsVerticalScrollIndicator={false}
           style={styles.homeScroll}
@@ -38,17 +41,21 @@ export default function Home() {
             style={styles.bannerScroll}
           >
             {banners.map((banner, index) => (
-              <Image
+              <TouchableOpacity
                 key={index}
-                source={banner.image}
-                style={styles.banner}
-                resizeMode='cover'
-              />
+                onPress={() => handleBannerPress(banner.url)}
+              >
+                <Image
+                  source={banner.image}
+                  style={styles.banner}
+                  resizeMode='cover'
+                />
+              </TouchableOpacity>
             ))}
           </ScrollView>
-          <CategoryMountain></CategoryMountain>
+          <CategoryMountain />
         </ScrollView>
-        <Footer></Footer>
+        <Footer />
       </View>
     </View>
   );
@@ -57,6 +64,7 @@ export default function Home() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#FFFFFF',
   },
   wrapper: {
     flex: 1,
