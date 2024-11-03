@@ -13,7 +13,7 @@ import IconButton from '../sub/IconButton';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import MapView, { PROVIDER_GOOGLE, Polyline, Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
-import api from '../api/api';
+import { basicAxios } from '../api/axios';
 import RoadWarningButton from './RoadWarningButton';
 import StartStopButton from './StartStopButton';
 import colors from '../sub/colors';
@@ -154,7 +154,7 @@ export const HikingMapView = () => {
       };
 
       try {
-        await api.post(`/api/v1/auth/hiking_record`, hikingData);
+        await basicAxios.post(`/api/v1/auth/hiking_record`, hikingData);
         console.log('Hiking record data sent to server');
       } catch (error) {
         console.error('Error sending hiking record data:', error);
