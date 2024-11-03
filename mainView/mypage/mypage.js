@@ -55,7 +55,6 @@ export default function Mypage() {
                 style={styles.icon}
               />
               <Text style={styles.menuText}>나의 코스</Text>
-              <Text style={styles.arrow}>&gt;</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.menuItem}>
               <Image
@@ -63,7 +62,6 @@ export default function Mypage() {
                 style={styles.icon}
               />
               <Text style={styles.menuText}>등산 기록</Text>
-              <Text style={styles.arrow}>&gt;</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.menuItem}>
               <Image
@@ -71,7 +69,6 @@ export default function Mypage() {
                 style={styles.icon}
               />
               <Text style={styles.menuText}>작성한 글</Text>
-              <Text style={styles.arrow}>&gt;</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.menuItem}>
               <Image
@@ -79,51 +76,6 @@ export default function Mypage() {
                 style={styles.icon}
               />
               <Text style={styles.menuText}>나의 댓글</Text>
-              <Text style={styles.arrow}>&gt;</Text>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.divider}></View>
-          <View style={styles.section}>
-            <View style={styles.header}>
-              <Text style={styles.headerText}>하플 이용하기</Text>
-            </View>
-            <TouchableOpacity style={styles.menuItem}>
-              <Image
-                source={require('../../assets/icon/notification_icon.png')}
-                style={styles.icon}
-              />
-              <Text style={styles.menuText}>공지 사항</Text>
-              <Text style={styles.arrow}>&gt;</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.menuItem}>
-              <Image
-                source={require('../../assets/icon/question_icon.png')}
-                style={styles.icon}
-              />
-              <Text style={styles.menuText}>1:1 문의</Text>
-              <Text style={styles.arrow}>&gt;</Text>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.divider}></View>
-          <View style={styles.section}>
-            <View style={styles.header}>
-              <Text style={styles.headerText}>이용 정책</Text>
-            </View>
-            <TouchableOpacity style={styles.menuItem}>
-              <Image
-                source={require('../../assets/icon/policy_icon.png')}
-                style={styles.icon}
-              />
-              <Text style={styles.menuText}>이용 약관</Text>
-              <Text style={styles.arrow}>&gt;</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.menuItem}>
-              <Image
-                source={require('../../assets/icon/privacy_icon.png')}
-                style={styles.icon}
-              />
-              <Text style={styles.menuText}>개인정보 처리 방침</Text>
-              <Text style={styles.arrow}>&gt;</Text>
             </TouchableOpacity>
           </View>
           <View style={styles.divider}></View>
@@ -137,7 +89,6 @@ export default function Mypage() {
                 style={styles.icon}
               />
               <Text style={styles.menuText}>로그 아웃</Text>
-              <Text style={styles.arrow}>&gt;</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.menuItem}>
               <Image
@@ -145,7 +96,6 @@ export default function Mypage() {
                 style={styles.icon}
               />
               <Text style={styles.menuText}>회원 탈퇴</Text>
-              <Text style={styles.arrow}>&gt;</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -160,6 +110,7 @@ const styles = StyleSheet.create({
     alightItems: 'center',
     justifyContent: 'center',
     height: WINDOW_HEIGHT,
+    backgroundColor: '#FFFFFF',
   },
   homeScroll: {
     height: WINDOW_HEIGHT,
@@ -207,19 +158,19 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   headerText: {
-    fontSize: 15,
+    fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 10,
+    marginBottom: 15,
     marginLeft: 10,
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'left',
-    marginBottom: 5,
+    marginBottom: 10,
     marginLeft: 5,
   },
   menuText: {
-    fontSize: 16,
+    fontSize: 18,
     color: 'black',
     alignItems: 'baseline',
   },
@@ -236,7 +187,8 @@ const styles = StyleSheet.create({
   divider: {
     height: 5,
     width: '100%',
-    backgroundColor: '#CCCCCC',
+    backgroundColor: '#E0E0E0',
     marginTop: 10,
+    marginBottom: 10,
   },
 });
