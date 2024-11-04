@@ -11,6 +11,7 @@ import { WINDOW_WIDTH, WINDOW_HEIGHT } from '../sub/dimensions';
 import { useNavigation } from '@react-navigation/native';
 import Header from '../Header/searchheader';
 import Footer from '../footer';
+import Login from '../login';
 
 export default function Mypage() {
   const navigation = useNavigation();
@@ -26,7 +27,7 @@ export default function Mypage() {
         >
           <TouchableOpacity
             onPress={() => {
-              /* 로그인 및 회원가입 페이지로 이동하는 함수 호출 */
+              navigation.navigate(Login)
             }}
           >
             <View style={styles.userContainer}>
