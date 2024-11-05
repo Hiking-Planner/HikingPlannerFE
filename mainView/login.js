@@ -5,12 +5,16 @@ import colors from './sub/colors';
 import { useNavigation } from '@react-navigation/native';
 import { basicAxios } from './api/axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import userInfoStore from './stores/userInfoStore'; // userInfoStore 가져오기
 
 const Login = () => {
   const [id, setId] = useState('');
   const [password, setPassword] = useState('');
   const navigation = useNavigation();
   const passwordInputRef = useRef(null);
+
+  // userInfoStore의 setUserInfo 함수 가져오기
+  const setUserInfo = userInfoStore((state) => state.setUserInfo);
 
   // 로그인 요청 함수
   const signIn = async () => {
@@ -20,15 +24,25 @@ const Login = () => {
         password,
       });
 
-      const { accessToken } = response.data || {}; // 응답에서 액세스 토큰 추출
+      const { token, /*user*/ } = response.data || {}; // 응답에서 액세스 토큰과 유저 정보 추출
 
-      if (accessToken) {
+      if (token /*&& user*/) {
         // 액세스 토큰을 AsyncStorage에 저장
-        await AsyncStorage.setItem('accessToken', accessToken);
+        await AsyncStorage.setItem('accessToken', token);
         Alert.alert('성공', '로그인에 성공했습니다!');
-        navigation.navigate('Home'); // 로그인 후 홈 화면으로 이동
+        console.log("login token : ", token);
+
+        /*// userInfoStore에 유저 정보 저장
+        setUserInfo({
+          id: user.id,
+          name: user.name,
+          isLoggedIn: true,
+          expiredTime: user.expiredTime,
+        });*/
+
+        setTimeout(() => navigation.navigate('Home'), 100); // 로그인 후 홈 화면으로 이동
       } else {
-        // 토큰이 없을 경우 처리
+        // 토큰이나 유저 정보가 없을 경우 처리
         await AsyncStorage.removeItem('accessToken');
         Alert.alert('로그인 실패', '유효한 토큰을 받지 못했습니다.');
       }

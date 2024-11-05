@@ -65,7 +65,7 @@ export default function Commu() {
   const submitComment = async () => {
     try {
       await authAxios.post('/api/v1/auth/comments', {
-        postId: selectedPost.boardId,
+        boardId: selectedPost.boardId,
         content: newComment,
       });
       Alert.alert('성공', '댓글이 작성되었습니다!');
@@ -89,13 +89,30 @@ export default function Commu() {
     }
   };
 
+  // 게시물 작성
   const submitPost = async () => {
     try {
-      await authAxios.post('/api/v1/auth/boards', {
-        title,
-        content,
-        mountainName: 'none',
+      const formData = new FormData();
+      formData.append('title', title);
+      formData.append('content', content);
+      formData.append('mountainName', 'none');
+  
+      // 이미지 파일을 FormData에 추가
+      images.forEach((image, index) => {
+        formData.append(`images`, {
+          uri: image.uri,
+          type: image.type || 'image/jpeg', // 이미지 타입 설정 (기본값은 jpeg)
+          name: `image${index}.jpg`, // 이미지 이름 설정
+        });
       });
+  
+      // Axios 요청 시 헤더에 'multipart/form-data' 설정
+      await authAxios.post('/api/v1/auth/boards', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+  
       Alert.alert('성공', '게시글이 작성되었습니다!');
       setModalVisible(false);
       fetchPosts();
@@ -107,7 +124,7 @@ export default function Commu() {
       Alert.alert('오류', '게시글 작성에 실패했습니다.');
     }
   };
-
+  
   const deletePost = async (postId) => {
     try {
       await authAxios.delete(`/api/v1/auth/boards/${postId}`);
@@ -136,6 +153,7 @@ export default function Commu() {
       useNativeDriver: true,
     }).start();
   };
+  
 
   const toggleMenu = () => {
     setIsMenuVisible((prev) => !prev);
@@ -166,7 +184,7 @@ export default function Commu() {
         data={posts}
         keyExtractor={(item) => item.boardId.toString()}
         renderItem={renderPost}
-        contentContainerStyle={styles.scrollView}
+        contentContainerStyle={[styles.scrollView, { flexGrow: 1 }]}
       />
 
       <TouchableOpacity style={styles.createButton} onPress={() => setModalVisible(true)}>

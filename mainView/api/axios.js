@@ -11,16 +11,17 @@ export const basicAxios = axios.create({
   timeout: 10000, // 10초 타임아웃 설정
 });
 
-// 비동기로 access token 가져오기 함수
+/*// 비동기로 access token 가져오기 함수
 const getAccessToken = async () => {
   try {
     const token = await AsyncStorage.getItem('accessToken'); // 토큰 가져오기
-    return token || ''; // null 또는 undefined 시 빈 문자열 반환
+    console.log(token);
+    return token;
   } catch (error) {
     console.error('토큰 가져오기 오류:', error);
     return ''; // 오류 발생 시에도 빈 문자열 반환
   }
-};
+};*/
 
 // 인증이 필요한 axios 인스턴스 생성
 export const authAxios = axios.create({
@@ -34,16 +35,23 @@ export const authAxios = axios.create({
 // 요청 인터셉터: 요청 전 access token을 헤더에 추가
 authAxios.interceptors.request.use(
   async (config) => {
-    const token = await getAccessToken(); // 토큰 가져오기
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`; // 토큰이 있을 때만 헤더에 추가
-    } else {
-      console.warn('토큰이 없습니다. 인증이 필요한 요청입니다.');
+    try {
+      const token = await AsyncStorage.getItem('accessToken'); // 직접 호출
+      console.log("axios token : ", token);
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+        console.log("보내는 토큰 : ", token);
+      } else {
+        console.warn('토큰이 없습니다. 인증이 필요한 요청입니다.');
+      }
+    } catch (error) {
+      console.error('인터셉터에서 토큰 가져오기 오류:', error);
     }
     return config;
   },
   (error) => Promise.reject(error)
 );
+
 
 // 응답 인터셉터: 에러 처리
 authAxios.interceptors.response.use(
