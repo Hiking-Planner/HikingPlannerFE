@@ -8,7 +8,6 @@ const userInfoStore = create(
       id: 0,
       name: "",
       isLoggedIn: false,
-      expiredTime: "",
       setUserInfo: (userInfo) =>
         set((state) => ({
           ...state,

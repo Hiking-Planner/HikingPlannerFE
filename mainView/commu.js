@@ -51,9 +51,9 @@ export default function Commu() {
   }, []);
 
   // 댓글 불러오기
-  const fetchComments = async (postId) => {
+  const fetchComments = async (boardId) => {
     try {
-      const response = await basicAxios.get(`/api/v1/auth/comments?postId=${postId}`);
+      const response = await basicAxios.get(`/api/v1/auth/comments?boardId=${boardId}`);
       setComments(response.data || []);
     } catch (error) {
       console.error('댓글 불러오기 실패:', error.message);
@@ -67,7 +67,6 @@ export default function Commu() {
         boardId: selectedPost.boardId,
         content: newComment,
       });
-      Alert.alert('성공', '댓글이 작성되었습니다!');
       setNewComment('');
       fetchComments(selectedPost.boardId); // 댓글 새로고침
     } catch (error) {
@@ -250,6 +249,7 @@ export default function Commu() {
                   >
                     {comments.map((comment) => (
                       <View key={comment.commentId} style={styles.commentContainer}>
+                        <Text style={styles.commentUserName}>{comment.userName}</Text>
                         <Text style={styles.commentText}>{comment.content}</Text>
                       </View>
                     ))}
@@ -441,6 +441,12 @@ const styles = StyleSheet.create({
   commentText: {
     fontSize: 14,
     color: '#333',
+  },
+  commentUserName: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 3,
   },
   commentInputContainer: {
     flexDirection: 'row',
