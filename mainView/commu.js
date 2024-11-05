@@ -56,7 +56,7 @@ export default function Commu() {
     try {
       const response = await basicAxios.get(`/api/v1/auth/comments?boardId=${boardId}`);
       const response = await basicAxios.get(
-        `/api/v1/auth/comments?postId=${postId}`
+        `/api/v1/auth/comments?boardId=${boardId}`
       );
       setComments(response.data || []);
     } catch (error) {
