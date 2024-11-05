@@ -52,10 +52,10 @@ export default function Commu() {
   }, []);
 
   // 댓글 불러오기
-  const fetchComments = async (postId) => {
+  const fetchComments = async (boardId) => {
     try {
       const response = await basicAxios.get(
-        `/api/v1/auth/comments?postId=${postId}`
+        `/api/v1/auth/comments?boardId=${boardId}`
       );
       setComments(response.data || []);
     } catch (error) {
