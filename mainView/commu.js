@@ -33,6 +33,7 @@ export default function Commu() {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [images, setImages] = useState([]);
+  const [slideAnim] = useState(new Animated.Value(0));
   const [isMenuVisible, setIsMenuVisible] = useState(false);
 
   // 게시물 불러오기
@@ -54,6 +55,9 @@ export default function Commu() {
   const fetchComments = async (boardId) => {
     try {
       const response = await basicAxios.get(`/api/v1/auth/comments?boardId=${boardId}`);
+      const response = await basicAxios.get(
+        `/api/v1/auth/comments?postId=${postId}`
+      );
       setComments(response.data || []);
     } catch (error) {
       console.error('댓글 불러오기 실패:', error.message);
@@ -94,22 +98,25 @@ export default function Commu() {
       formData.append('title', title);
       formData.append('content', content);
       formData.append('mountainName', 'none');
-  
+
       // 이미지 파일을 FormData에 추가
       images.forEach((image, index) => {
         formData.append('image', {
           uri: image.uri,
           type: 'image/jpeg',
           name: `image${index}.jpg`,
+          type: image.type || 'image/jpeg',
+          name: `image${index}.jpg`,
         });
       });
   
+
       await authAxios.post('/api/v1/auth/boards', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
-  
+
       Alert.alert('성공', '게시글이 작성되었습니다!');
       setModalVisible(false);
       fetchPosts();
@@ -122,6 +129,8 @@ export default function Commu() {
     }
   };  
   
+  };
+
   const deletePost = async (postId) => {
     try {
       await authAxios.delete(`/api/v1/auth/boards/${postId}`);
@@ -137,13 +146,43 @@ export default function Commu() {
   const openPostModal = (post) => {
     setSelectedPost(post);
     setPostModalVisible(true);
-    fetchComments(post.boardId); // 댓글 불러오기
+    fetchComments(post.boardId);
     setIsMenuVisible(false);
+  };
+
+  const toggleSlide = () => {
+    const toValue = slideAnim._value === 0 ? 1 : 0;
+    Animated.timing(slideAnim, {
+      toValue,
+      duration: 300,
+      easing: Easing.linear,
+      useNativeDriver: true,
+    }).start();
   };
 
   const toggleMenu = () => {
     setIsMenuVisible((prev) => !prev);
   };
+
+  const renderPost = ({ item }) => (
+    <TouchableOpacity
+      onPress={() => openPostModal(item)}
+      style={styles.postContainer}
+    >
+      <Image source={{ uri: item.imageUrl }} style={styles.postImage} />
+      <View style={styles.postContent}>
+        <Text style={styles.postTitle}>{item.title}</Text>
+        <Text style={styles.postText}>{item.content}</Text>
+        <Text style={styles.mountainName}>산 이름: {item.mountainName}</Text>
+      </View>
+    </TouchableOpacity>
+  );
+
+  const renderComment = ({ item }) => (
+    <View style={styles.commentContainer}>
+      <Text style={styles.commentText}>{item.content}</Text>
+    </View>
+  );
 
   return (
     <View style={{flex: 1}}>
@@ -166,6 +205,9 @@ export default function Commu() {
         )}
         contentContainerStyle={styles.scrollView}
         nestedScrollEnabled={true}
+        renderItem={renderPost}
+        contentContainerStyle={styles.flatListContent}
+        style={{ flex: 1 }}
       />
 
 
@@ -173,30 +215,47 @@ export default function Commu() {
           <Icon name="pencil" size={20} color="#fff" />
           <Text style={styles.createButtonText}>작성하기</Text>
         </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.createButton}
+        onPress={() => setModalVisible(true)}
+      >
+        <Icon name='pencil' size={20} color='#fff' />
+        <Text style={styles.createButtonText}>작성하기</Text>
+      </TouchableOpacity>
+
+      <View style={styles.footerContainer}>
+        <Footer />
+      </View>
 
       {/* 게시글 작성 모달 */}
-      <Modal animationType="slide" transparent visible={isModalVisible}>
+      <Modal animationType='slide' transparent visible={isModalVisible}>
         <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
           <View style={styles.modalContainer}>
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
               <View style={styles.modalContent}>
-                <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.closeButton}>
-                  <Icon name="close" size={24} color="#000" />
+                <TouchableOpacity
+                  onPress={() => setModalVisible(false)}
+                  style={styles.closeButton}
+                >
+                  <Icon name='close' size={24} color='#000' />
                 </TouchableOpacity>
                 <TextInput
                   style={styles.input}
-                  placeholder="제목을 입력하세요"
+                  placeholder='제목을 입력하세요'
                   value={title}
                   onChangeText={setTitle}
                 />
                 <TextInput
                   style={[styles.input, styles.contentInput]}
-                  placeholder="내용을 입력하세요"
+                  placeholder='내용을 입력하세요'
                   value={content}
                   onChangeText={setContent}
                   multiline
                 />
-                <TouchableOpacity style={styles.selectImageButton} onPress={selectImages}>
+                <TouchableOpacity
+                  style={styles.selectImageButton}
+                  onPress={selectImages}
+                >
                   <Text style={styles.selectImageButtonText}>이미지 선택</Text>
                 </TouchableOpacity>
                 <View style={styles.buttonRow}>
@@ -206,7 +265,10 @@ export default function Commu() {
                   >
                     <Text style={styles.cancelButtonText}>취소</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={styles.submitButton} onPress={submitPost}>
+                  <TouchableOpacity
+                    style={styles.submitButton}
+                    onPress={submitPost}
+                  >
                     <Text style={styles.submitButtonText}>작성하기</Text>
                   </TouchableOpacity>
                 </View>
@@ -217,17 +279,23 @@ export default function Commu() {
       </Modal>
 
       {/* 게시글 상세 모달 */}
-      <Modal animationType="slide" transparent visible={isPostModalVisible}>
+      <Modal animationType='slide' transparent visible={isPostModalVisible}>
         <TouchableWithoutFeedback onPress={() => setPostModalVisible(false)}>
           <View style={styles.modalContainer}>
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
               <View style={styles.modalContent}>
-              <View style={styles.menuIconContainer}>
-                  <TouchableOpacity onPress={toggleMenu} style={styles.menuIcon}>
-                    <Icon name="dots-vertical" size={24} color="#000" />
+                <View style={styles.menuIconContainer}>
+                  <TouchableOpacity
+                    onPress={toggleMenu}
+                    style={styles.menuIcon}
+                  >
+                    <Icon name='dots-vertical' size={24} color='#000' />
                   </TouchableOpacity>
                 </View>
-                <Image source={{ uri: selectedPost?.imageUrl }} style={styles.postImage} />
+                <Image
+                  source={{ uri: selectedPost?.imageUrl }}
+                  style={styles.postImage}
+                />
                 <View style={styles.modalTextContainer}>
                   <Text style={styles.postTitle}>{selectedPost?.title}</Text>
                   <Text style={styles.postText}>{selectedPost?.content}</Text>
@@ -235,9 +303,30 @@ export default function Commu() {
                     <View style={styles.iconContainer}>
                       <TouchableOpacity onPress={() => setPostModalVisible(false)}>
                         <Icon name="pencil" size={24} color="#000" />
+                    <Animated.View
+                      style={[
+                        styles.iconContainer,
+                        {
+                          transform: [
+                            {
+                              translateY: slideAnim.interpolate({
+                                inputRange: [0, 1],
+                                outputRange: [0, 5],
+                              }),
+                            },
+                          ],
+                        },
+                      ]}
+                    >
+                      <TouchableOpacity
+                        onPress={() => setPostModalVisible(false)}
+                      >
+                        <Icon name='pencil' size={24} color='#000' />
                       </TouchableOpacity>
-                      <TouchableOpacity onPress={() => deletePost(selectedPost.boardId)}>
-                        <Icon name="delete" size={24} color="red" />
+                      <TouchableOpacity
+                        onPress={() => deletePost(selectedPost.boardId)}
+                      >
+                        <Icon name='delete' size={24} color='red' />
                       </TouchableOpacity>
                     </View>
                   )}
@@ -259,7 +348,7 @@ export default function Commu() {
                   <View style={styles.commentInputContainer}>
                     <TextInput
                       style={styles.commentInput}
-                      placeholder="댓글을 입력하세요"
+                      placeholder='댓글을 입력하세요'
                       value={newComment}
                       onChangeText={setNewComment}
                       />
@@ -278,15 +367,31 @@ export default function Commu() {
     );
   }
   
+                    />
+                    <TouchableOpacity
+                      onPress={submitComment}
+                      style={styles.commentButton}
+                    >
+                      <Text style={styles.commentButtonText}>작성</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
+    </View>
+  );
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
   },
-  scrollView: {
-    flex: 1,
-    marginBottom: WINDOW_HEIGHT * 0.1,
+  flatListContent: {
+    paddingBottom: 60, // Footer 공간을 확보
   },
   postContainer: {
     padding: 15,
@@ -411,23 +516,23 @@ const styles = StyleSheet.create({
   },
   menuIconContainer: {
     position: 'absolute',
-    top: 10,  // 모달 상단에서 조금 떨어진 위치
+    top: 10,
     right: 10,
     zIndex: 10,
   },
   menuIcon: {
-    padding: 5, // 클릭 영역 확장
+    padding: 5,
   },
   iconContainer: {
     position: 'absolute',
-    top: 30,  // 말줄임표 바로 밑에 맞춤
+    top: 30,
     right: 10,
-    zIndex: 20,  // 다른 요소들 위에 배치
+    zIndex: 20,
     backgroundColor: '#fff',
     borderRadius: 5,
     padding: 5,
-    elevation: 5,  // 그림자 효과
-    flexDirection: 'row',  // 아이콘을 가로로 정렬
+    elevation: 5,
+    flexDirection: 'row',
   },
   commentList: {
     marginTop: 10,
@@ -472,5 +577,10 @@ const styles = StyleSheet.create({
   scrollView: {
     flexGrow: 1,
     marginBottom: WINDOW_HEIGHT * 0.1,
+  },
+  footerContainer: {
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
   },
 });
