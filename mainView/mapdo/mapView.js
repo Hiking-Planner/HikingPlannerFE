@@ -12,6 +12,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import IconButton from '../sub/IconButton';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import MapView, { PROVIDER_GOOGLE, Polyline, Marker } from 'react-native-maps';
+import { WINDOW_HEIGHT } from '../sub/dimensions';
 import * as Location from 'expo-location';
 import { basicAxios } from '../api/axios';
 import RoadWarningButton from './RoadWarningButton';
@@ -200,6 +201,15 @@ export const HikingMapView = () => {
 
   return (
     <View style={styles.screen}>
+      <View style={styles.header}>
+        <View style={styles.leftBtn}>
+          <IconButton
+            iconName='chevron-left'
+            onPress={() => navigation.goBack()}
+          />
+        </View>
+        <Text style={styles.headerTitle}>등산중</Text>
+      </View>
       <MapView
         ref={mapRef}
         style={styles.map}
@@ -222,14 +232,6 @@ export const HikingMapView = () => {
           />
         ))}
       </MapView>
-      <TouchableOpacity style={styles.leftBtn}>
-        <IconButton
-          iconName='chevron-left'
-          onPress={() => navigation.goBack()}
-        />
-      </TouchableOpacity>
-      <RoadWarningButton onSubmit={handleReportSubmit} />
-      <StartStopButton tracking={tracking} onPress={handleStartStopButton} />
 
       {selectedReport && (
         <Modal
@@ -255,7 +257,12 @@ export const HikingMapView = () => {
           </View>
         </Modal>
       )}
-      <SosButton userId='1' location={location} userName='채인' />
+
+      <View style={styles.bottomButtonContainer}>
+        <SosButton userId='1' location={location} userName='채인' />
+        <StartStopButton tracking={tracking} onPress={handleStartStopButton} />
+        <RoadWarningButton onSubmit={handleReportSubmit} />
+      </View>
     </View>
   );
 };
@@ -266,20 +273,33 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  header: {
+    height: WINDOW_HEIGHT * 0.09,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: WINDOW_HEIGHT * 0.035,
+  },
+  leftBtn: {
+    flex: 2,
+    zIndex: 10,
+  },
+  headerTitle: {
+    flex: 7,
+    textAlign: 'center',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginTop: 23,
+  },
   map: {
     width: '100%',
-    height: '100%',
+    height: '90%',
+    paddingBottom: WINDOW_HEIGHT * 0.1,
   },
   leftBtn: {
     position: 'absolute',
     top: 30,
     left: '1%',
     margin: 5,
-  },
-  roadWarningBtn: {
-    position: 'absolute',
-    right: '3%',
-    top: '28%',
   },
   loadingContainer: {
     flex: 1,
@@ -301,6 +321,20 @@ const styles = StyleSheet.create({
     width: 270,
     height: 270,
     marginVertical: 10,
+  },
+  bottomButtonContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: WINDOW_HEIGHT * 0.1,
+    borderTopWidth: 1,
+    borderTopColor: colors.Gray,
+    backgroundColor: 'white',
+    flexDirection: 'row',
+    justifyContent: 'space-around', // 각 메뉴 아이템을 균등하게 분배
+    alignItems: 'center',
+    paddingVertical: 10,
   },
   button: {
     width: 100,

@@ -10,6 +10,7 @@ import {
 import axios from 'axios';
 import * as Location from 'expo-location';
 import { Audio } from 'expo-av';
+import colors from '../sub/colors';
 
 const SosButton = ({ userId, location, userName }) => {
   const [modalVisible, setModalVisible] = useState(false);
@@ -50,7 +51,7 @@ const SosButton = ({ userId, location, userName }) => {
           latitude: location.latitude,
           longitude: location.longitude,
           date: new Date().toISOString(),
-        },
+        }
       );
 
       const { data } = response;
@@ -82,7 +83,7 @@ const SosButton = ({ userId, location, userName }) => {
           phone_number: sosInfo.phone_number,
           nationalposnum: sosInfo.nationalposnum,
           time: sosInfo.time,
-        },
+        }
       );
 
       console.log('SOS message sent:', response.data);
@@ -109,22 +110,33 @@ const SosButton = ({ userId, location, userName }) => {
       </TouchableOpacity>
       <Modal
         transparent={true}
-        animationType="slide"
+        animationType='slide'
         visible={modalVisible}
         onRequestClose={handleCancel}
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalText}>긴급신고가 필요한 상황이신가요?</Text>
-            <Text style={styles.modalText}>취소를 누르지 않으면 3초 후에 자동으로 신고됩니다.</Text>
+            <Text style={styles.modalText}>
+              긴급신고가 필요한 상황이신가요?
+            </Text>
+            <Text style={styles.modalText}>
+              취소를 누르지 않으면 3초 후에 자동으로 신고됩니다.
+            </Text>
             {sosInfo && (
               <>
-                <Text style={styles.modalText}>이름: {sosInfo.username || userName}</Text>
+                <Text style={styles.modalText}>
+                  이름: {sosInfo.username || userName}
+                </Text>
                 <Text style={styles.modalText}>신고시각: {sosInfo.time}</Text>
-                <Text style={styles.modalText}>국가지점번호: {sosInfo.nationalposnum}</Text>
+                <Text style={styles.modalText}>
+                  국가지점번호: {sosInfo.nationalposnum}
+                </Text>
               </>
             )}
-            <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
+            <TouchableOpacity
+              style={styles.cancelButton}
+              onPress={handleCancel}
+            >
               <Text style={styles.cancelButtonText}>취소</Text>
             </TouchableOpacity>
           </View>
@@ -136,23 +148,20 @@ const SosButton = ({ userId, location, userName }) => {
 
 const styles = StyleSheet.create({
   container: {
-    position: 'absolute',
-    top: 50,
-    right: 20,
-    zIndex: 10,
+    padding: 10,
   },
   sosButton: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: 'red',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: colors.mintGreen,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    marginHorizontal: 5,
   },
   sosButtonText: {
-    color: 'white',
-    fontSize: 18,
+    color: colors.white,
+    fontSize: 16,
     fontWeight: 'bold',
+    textAlign: 'center',
   },
   modalContainer: {
     flex: 1,
