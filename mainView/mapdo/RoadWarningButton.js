@@ -111,7 +111,7 @@ const RoadWarningButton = ({ onSubmit }) => {
   return (
     <>
       <TouchableOpacity
-        style={styles.roadWarningBtn}
+        style={styles.warnningButton}
         onPress={() => {
           if (hasCameraPermission) {
             setModalVisible(true);
@@ -120,7 +120,7 @@ const RoadWarningButton = ({ onSubmit }) => {
           }
         }}
       >
-        <FontAwesome name='warning' size={42} color={colors.red} />
+        <Text style={styles.buttonText}>등산길 이상</Text>
       </TouchableOpacity>
 
       <Modal
@@ -205,10 +205,12 @@ const RoadWarningButton = ({ onSubmit }) => {
 };
 
 const styles = StyleSheet.create({
-  roadWarningBtn: {
-    position: 'absolute',
-    right: '3%',
-    top: '28%',
+  warnningButton: {
+    backgroundColor: colors.mintGreen,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    marginHorizontal: 5,
   },
   modalContainer: {
     flex: 1,

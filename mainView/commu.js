@@ -13,6 +13,8 @@ import {
   StyleSheet,
   TouchableWithoutFeedback,
   Keyboard,
+  Animated,
+  Easing,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Footer from './footer';
@@ -28,8 +30,8 @@ export default function Commu() {
   const [isPostModalVisible, setPostModalVisible] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
   const [posts, setPosts] = useState([]);
-  const [comments, setComments] = useState([]); // 댓글 상태 추가
-  const [newComment, setNewComment] = useState(''); // 새 댓글 입력 상태
+  const [comments, setComments] = useState([]);
+  const [newComment, setNewComment] = useState('');
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [images, setImages] = useState([]);
@@ -54,7 +56,6 @@ export default function Commu() {
   // 댓글 불러오기
   const fetchComments = async (boardId) => {
     try {
-      const response = await basicAxios.get(`/api/v1/auth/comments?boardId=${boardId}`);
       const response = await basicAxios.get(
         `/api/v1/auth/comments?boardId=${boardId}`
       );
@@ -72,7 +73,7 @@ export default function Commu() {
         content: newComment,
       });
       setNewComment('');
-      fetchComments(selectedPost.boardId); // 댓글 새로고침
+      fetchComments(selectedPost.boardId);
     } catch (error) {
       console.error('댓글 작성 실패:', error.message);
       Alert.alert('오류', '댓글 작성에 실패했습니다.');
@@ -99,17 +100,13 @@ export default function Commu() {
       formData.append('content', content);
       formData.append('mountainName', 'none');
 
-      // 이미지 파일을 FormData에 추가
       images.forEach((image, index) => {
         formData.append('image', {
           uri: image.uri,
-          type: 'image/jpeg',
-          name: `image${index}.jpg`,
           type: image.type || 'image/jpeg',
           name: `image${index}.jpg`,
         });
       });
-  
 
       await authAxios.post('/api/v1/auth/boards', formData, {
         headers: {
@@ -127,8 +124,6 @@ export default function Commu() {
       console.error('게시글 작성 실패:', error.message);
       Alert.alert('오류', '게시글 작성에 실패했습니다.');
     }
-  };  
-  
   };
 
   const deletePost = async (postId) => {
@@ -164,28 +159,8 @@ export default function Commu() {
     setIsMenuVisible((prev) => !prev);
   };
 
-  const renderPost = ({ item }) => (
-    <TouchableOpacity
-      onPress={() => openPostModal(item)}
-      style={styles.postContainer}
-    >
-      <Image source={{ uri: item.imageUrl }} style={styles.postImage} />
-      <View style={styles.postContent}>
-        <Text style={styles.postTitle}>{item.title}</Text>
-        <Text style={styles.postText}>{item.content}</Text>
-        <Text style={styles.mountainName}>산 이름: {item.mountainName}</Text>
-      </View>
-    </TouchableOpacity>
-  );
-
-  const renderComment = ({ item }) => (
-    <View style={styles.commentContainer}>
-      <Text style={styles.commentText}>{item.content}</Text>
-    </View>
-  );
-
   return (
-    <View style={{flex: 1}}>
+    <View style={{ flex: 1 }}>
       <Header />
       <FlatList
         data={posts}
@@ -199,22 +174,15 @@ export default function Commu() {
             <View style={styles.postContent}>
               <Text style={styles.postTitle}>{item.title}</Text>
               <Text style={styles.postText}>{item.content}</Text>
-              <Text style={styles.mountainName}>산 이름: {item.mountainName}</Text>
+              <Text style={styles.mountainName}>
+                산 이름: {item.mountainName}
+              </Text>
             </View>
           </Pressable>
         )}
         contentContainerStyle={styles.scrollView}
-        nestedScrollEnabled={true}
-        renderItem={renderPost}
-        contentContainerStyle={styles.flatListContent}
-        style={{ flex: 1 }}
       />
 
-
-        <TouchableOpacity style={styles.createButton} onPress={() => setModalVisible(true)}>
-          <Icon name="pencil" size={20} color="#fff" />
-          <Text style={styles.createButtonText}>작성하기</Text>
-        </TouchableOpacity>
       <TouchableOpacity
         style={styles.createButton}
         onPress={() => setModalVisible(true)}
@@ -301,23 +269,6 @@ export default function Commu() {
                   <Text style={styles.postText}>{selectedPost?.content}</Text>
                   {isMenuVisible && (
                     <View style={styles.iconContainer}>
-                      <TouchableOpacity onPress={() => setPostModalVisible(false)}>
-                        <Icon name="pencil" size={24} color="#000" />
-                    <Animated.View
-                      style={[
-                        styles.iconContainer,
-                        {
-                          transform: [
-                            {
-                              translateY: slideAnim.interpolate({
-                                inputRange: [0, 1],
-                                outputRange: [0, 5],
-                              }),
-                            },
-                          ],
-                        },
-                      ]}
-                    >
                       <TouchableOpacity
                         onPress={() => setPostModalVisible(false)}
                       >
@@ -334,12 +285,18 @@ export default function Commu() {
                   <ScrollView
                     style={styles.commentList}
                     contentContainerStyle={{ flexGrow: 1 }}
-                    nestedScrollEnabled={true}
                   >
                     {comments.map((comment) => (
-                      <View key={comment.commentId} style={styles.commentContainer}>
-                        <Text style={styles.commentUserName}>{comment.userName}</Text>
-                        <Text style={styles.commentText}>{comment.content}</Text>
+                      <View
+                        key={comment.commentId}
+                        style={styles.commentContainer}
+                      >
+                        <Text style={styles.commentUserName}>
+                          {comment.userName}
+                        </Text>
+                        <Text style={styles.commentText}>
+                          {comment.content}
+                        </Text>
                       </View>
                     ))}
                   </ScrollView>
@@ -351,22 +308,6 @@ export default function Commu() {
                       placeholder='댓글을 입력하세요'
                       value={newComment}
                       onChangeText={setNewComment}
-                      />
-                      <TouchableOpacity onPress={submitComment} style={styles.commentButton}>
-                        <Text style={styles.commentButtonText}>작성</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                </View>
-              </TouchableWithoutFeedback>
-            </View>
-          </TouchableWithoutFeedback>
-        </Modal>
-        <Footer />
-      </View>
-    );
-  }
-  
                     />
                     <TouchableOpacity
                       onPress={submitComment}
@@ -391,7 +332,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   flatListContent: {
-    paddingBottom: 60, // Footer 공간을 확보
+    paddingBottom: 60,
   },
   postContainer: {
     padding: 15,
