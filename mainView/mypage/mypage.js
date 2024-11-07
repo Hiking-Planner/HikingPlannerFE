@@ -6,19 +6,40 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
+  Alert,
 } from 'react-native';
 import { WINDOW_WIDTH, WINDOW_HEIGHT } from '../sub/dimensions';
 import { useNavigation } from '@react-navigation/native';
 import Header from '../Header/searchheader';
 import Footer from '../footer';
 import Login from '../login';
-import useUserInfoStore from '../stores/userInfoStore'; // `useUserInfoStore`로 변경
+import useUserInfoStore from '../stores/userInfoStore';
+import AsyncStorage from '@react-native-async-storage/async-storage'; // 추가
 
 export default function Mypage() {
   const navigation = useNavigation();
-  const { userInfo } = useUserInfoStore(); // 상태 가져오기
-  const { isLoggedIn, nickname } = userInfo; // 상태에서 값 추출
+  const { userInfo, setUserInfo } = useUserInfoStore(); // 상태 가져오기 및 함수 추가
+  const { isLoggedIn, nickname } = userInfo;
+
   console.log(isLoggedIn, nickname);
+
+  const handleLogout = async () => {
+    try {
+      // AsyncStorage에서 토큰 제거
+      await AsyncStorage.removeItem('accessToken');
+      // 상태 초기화
+      setUserInfo({
+        userId: '',
+        nickname: '',
+        isLoggedIn: false,
+      });
+      Alert.alert('로그아웃', '성공적으로 로그아웃되었습니다.');
+      navigation.navigate('Mypage'); // 로그아웃 후 마이페이지로 이동
+    } catch (error) {
+      console.error('로그아웃 실패:', error);
+      Alert.alert('오류', '로그아웃에 실패했습니다.');
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -103,7 +124,7 @@ export default function Mypage() {
                 <View style={styles.header}>
                   <Text style={styles.headerText}>회원 설정</Text>
                 </View>
-                <TouchableOpacity style={styles.menuItem}>
+                <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
                   <Image
                     source={require('../../assets/icon/logout_icon.png')}
                     style={styles.icon}
@@ -126,7 +147,6 @@ export default function Mypage() {
     </View>
   );
 }
-
 
 const styles = StyleSheet.create({
   container: {
