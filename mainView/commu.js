@@ -1,18 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import {
   View,
+  ScrollView,
   FlatList,
-  StyleSheet,
   Text,
   Image,
+  Pressable,
   TouchableOpacity,
   Modal,
   TextInput,
   Alert,
-  Animated,
-  Easing,
+  StyleSheet,
   TouchableWithoutFeedback,
   Keyboard,
+  Animated,
+  Easing,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Footer from './footer';
@@ -28,8 +30,8 @@ export default function Commu() {
   const [isPostModalVisible, setPostModalVisible] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
   const [posts, setPosts] = useState([]);
-  const [comments, setComments] = useState([]); // 댓글 상태 추가
-  const [newComment, setNewComment] = useState(''); // 새 댓글 입력 상태
+  const [comments, setComments] = useState([]);
+  const [newComment, setNewComment] = useState('');
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [images, setImages] = useState([]);
@@ -70,9 +72,8 @@ export default function Commu() {
         boardId: selectedPost.boardId,
         content: newComment,
       });
-      Alert.alert('성공', '댓글이 작성되었습니다!');
       setNewComment('');
-      fetchComments(selectedPost.boardId); // 댓글 새로고침
+      fetchComments(selectedPost.boardId);
     } catch (error) {
       console.error('댓글 작성 실패:', error.message);
       Alert.alert('오류', '댓글 작성에 실패했습니다.');
@@ -99,9 +100,8 @@ export default function Commu() {
       formData.append('content', content);
       formData.append('mountainName', 'none');
 
-      // 이미지 파일을 FormData에 추가
       images.forEach((image, index) => {
-        formData.append(`images`, {
+        formData.append('image', {
           uri: image.uri,
           type: image.type || 'image/jpeg',
           name: `image${index}.jpg`,
@@ -159,36 +159,28 @@ export default function Commu() {
     setIsMenuVisible((prev) => !prev);
   };
 
-  const renderPost = ({ item }) => (
-    <TouchableOpacity
-      onPress={() => openPostModal(item)}
-      style={styles.postContainer}
-    >
-      <Image source={{ uri: item.imageUrl }} style={styles.postImage} />
-      <View style={styles.postContent}>
-        <Text style={styles.postTitle}>{item.title}</Text>
-        <Text style={styles.postText}>{item.content}</Text>
-        <Text style={styles.mountainName}>산 이름: {item.mountainName}</Text>
-      </View>
-    </TouchableOpacity>
-  );
-
-  const renderComment = ({ item }) => (
-    <View style={styles.commentContainer}>
-      <Text style={styles.commentText}>{item.content}</Text>
-    </View>
-  );
-
   return (
-    <View style={styles.container}>
+    <View style={{ flex: 1 }}>
       <Header />
-
       <FlatList
         data={posts}
         keyExtractor={(item) => item.boardId.toString()}
-        renderItem={renderPost}
-        contentContainerStyle={styles.flatListContent}
-        style={{ flex: 1 }}
+        renderItem={({ item }) => (
+          <Pressable
+            onPress={() => openPostModal(item)}
+            style={styles.postContainer}
+          >
+            <Image source={{ uri: item.imageUrl }} style={styles.postImage} />
+            <View style={styles.postContent}>
+              <Text style={styles.postTitle}>{item.title}</Text>
+              <Text style={styles.postText}>{item.content}</Text>
+              <Text style={styles.mountainName}>
+                산 이름: {item.mountainName}
+              </Text>
+            </View>
+          </Pressable>
+        )}
+        contentContainerStyle={styles.scrollView}
       />
 
       <TouchableOpacity
@@ -276,21 +268,7 @@ export default function Commu() {
                   <Text style={styles.postTitle}>{selectedPost?.title}</Text>
                   <Text style={styles.postText}>{selectedPost?.content}</Text>
                   {isMenuVisible && (
-                    <Animated.View
-                      style={[
-                        styles.iconContainer,
-                        {
-                          transform: [
-                            {
-                              translateY: slideAnim.interpolate({
-                                inputRange: [0, 1],
-                                outputRange: [0, 5],
-                              }),
-                            },
-                          ],
-                        },
-                      ]}
-                    >
+                    <View style={styles.iconContainer}>
                       <TouchableOpacity
                         onPress={() => setPostModalVisible(false)}
                       >
@@ -301,15 +279,27 @@ export default function Commu() {
                       >
                         <Icon name='delete' size={24} color='red' />
                       </TouchableOpacity>
-                    </Animated.View>
+                    </View>
                   )}
                   {/* 댓글 목록 */}
-                  <FlatList
-                    data={comments}
-                    keyExtractor={(item) => item.commentId.toString()}
-                    renderItem={renderComment}
+                  <ScrollView
                     style={styles.commentList}
-                  />
+                    contentContainerStyle={{ flexGrow: 1 }}
+                  >
+                    {comments.map((comment) => (
+                      <View
+                        key={comment.commentId}
+                        style={styles.commentContainer}
+                      >
+                        <Text style={styles.commentUserName}>
+                          {comment.userName}
+                        </Text>
+                        <Text style={styles.commentText}>
+                          {comment.content}
+                        </Text>
+                      </View>
+                    ))}
+                  </ScrollView>
 
                   {/* 댓글 입력 */}
                   <View style={styles.commentInputContainer}>
@@ -342,7 +332,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   flatListContent: {
-    paddingBottom: 60, // Footer 공간을 확보
+    paddingBottom: 60,
   },
   postContainer: {
     padding: 15,
@@ -400,6 +390,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContent: {
+    flex: 1,
     width: '90%',
     backgroundColor: '#fff',
     borderRadius: 10,
@@ -497,6 +488,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#333',
   },
+  commentUserName: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 3,
+  },
   commentInputContainer: {
     flexDirection: 'row',
     marginTop: 10,
@@ -517,6 +514,10 @@ const styles = StyleSheet.create({
   commentButtonText: {
     color: '#fff',
     fontWeight: 'bold',
+  },
+  scrollView: {
+    flexGrow: 1,
+    marginBottom: WINDOW_HEIGHT * 0.1,
   },
   footerContainer: {
     position: 'absolute',

@@ -37,7 +37,7 @@ function App() {
           headerShown: false, // 상단 헤더 숨기기
           cardStyleInterpolator: CardStyleInterpolators.forNoAnimation,
         }}
-        initialRouteName='Commu'
+        initialRouteName='Start'
       >
         <Stack.Screen name='Home' component={Home} />
         <Stack.Screen name='Start' component={Start} />
