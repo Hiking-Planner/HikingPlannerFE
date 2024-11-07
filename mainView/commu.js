@@ -28,6 +28,7 @@ export default function Commu() {
   const navigation = useNavigation();
   const [isModalVisible, setModalVisible] = useState(false);
   const [isPostModalVisible, setPostModalVisible] = useState(false);
+  const [isEditModalVisible, setEditModalVisible] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
   const [posts, setPosts] = useState([]);
   const [comments, setComments] = useState([]);
@@ -35,7 +36,6 @@ export default function Commu() {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [images, setImages] = useState([]);
-  const [slideAnim] = useState(new Animated.Value(0));
   const [isMenuVisible, setIsMenuVisible] = useState(false);
 
   // 게시물 불러오기
@@ -69,8 +69,8 @@ export default function Commu() {
   const submitComment = async () => {
     try {
       await authAxios.post('/api/v1/auth/comments', {
-        boardId: selectedPost.boardId,
         content: newComment,
+        boardId: selectedPost.boardId,
       });
       setNewComment('');
       fetchComments(selectedPost.boardId);
@@ -126,6 +126,48 @@ export default function Commu() {
     }
   };
 
+  // 게시물 수정
+  const submitEditPost = async () => {
+    try {
+      const formData = new FormData();
+      formData.append('title', title);
+      formData.append('content', content);
+
+      images.forEach((image, index) => {
+        formData.append('image', {
+          uri: image.uri,
+          type: image.type || 'image/jpeg',
+          name: `image${index}.jpg`,
+        });
+      });
+
+      await authAxios.put(`/api/v1/auth/boards/${selectedPost.boardId}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }); // -> 백엔드 만들고 수정해야 함
+
+      Alert.alert('성공', '게시글이 수정되었습니다!');
+      setEditModalVisible(false);
+      fetchPosts();
+      setTitle('');
+      setContent('');
+      setImages([]);
+    } catch (error) {
+      console.error('게시글 수정 실패:', error.message);
+      Alert.alert('오류', '게시글 수정에 실패했습니다.');
+    }
+  };
+
+  // 게시물 수정 모달 켜기
+  const openEditModal = (post) => {
+    setSelectedPost(post);
+    setTitle(post.title);
+    setContent(post.content);
+    setEditModalVisible(true);
+  };
+
+  // 게시물 삭제
   const deletePost = async (postId) => {
     try {
       await authAxios.delete(`/api/v1/auth/boards/${postId}`);
@@ -138,21 +180,12 @@ export default function Commu() {
     }
   };
 
+  // 게시물 상세 모달 켜기
   const openPostModal = (post) => {
     setSelectedPost(post);
     setPostModalVisible(true);
     fetchComments(post.boardId);
     setIsMenuVisible(false);
-  };
-
-  const toggleSlide = () => {
-    const toValue = slideAnim._value === 0 ? 1 : 0;
-    Animated.timing(slideAnim, {
-      toValue,
-      duration: 300,
-      easing: Easing.linear,
-      useNativeDriver: true,
-    }).start();
   };
 
   const toggleMenu = () => {
@@ -270,7 +303,10 @@ export default function Commu() {
                   {isMenuVisible && (
                     <View style={styles.iconContainer}>
                       <TouchableOpacity
-                        onPress={() => setPostModalVisible(false)}
+                        onPress={() => {
+                        setPostModalVisible(false);
+                        openEditModal(selectedPost);
+                        }}
                       >
                         <Icon name='pencil' size={24} color='#000' />
                       </TouchableOpacity>
@@ -316,6 +352,56 @@ export default function Commu() {
                       <Text style={styles.commentButtonText}>작성</Text>
                     </TouchableOpacity>
                   </View>
+                </View>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
+      {/* 게시글 수정 모달 */}
+      <Modal animationType='slide' transparent visible={isEditModalVisible}>
+        <TouchableWithoutFeedback onPress={() => setEditModalVisible(false)}>
+          <View style={styles.modalContainer}>
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+              <View style={styles.modalContent}>
+                <TouchableOpacity
+                  onPress={() => setEditModalVisible(false)}
+                  style={styles.closeButton}
+                >
+                  <Icon name='close' size={24} color='#000' />
+                </TouchableOpacity>
+                <TextInput
+                  style={styles.input}
+                  placeholder='제목을 입력하세요'
+                  value={title}
+                  onChangeText={setTitle}
+                />
+                <TextInput
+                  style={[styles.input, styles.contentInput]}
+                  placeholder='내용을 입력하세요'
+                  value={content}
+                  onChangeText={setContent}
+                  multiline
+                />
+                <TouchableOpacity
+                  style={styles.selectImageButton}
+                  onPress={selectImages}
+                >
+                  <Text style={styles.selectImageButtonText}>이미지 선택</Text>
+                </TouchableOpacity>
+                <View style={styles.buttonRow}>
+                  <TouchableOpacity
+                    style={styles.cancelButton}
+                    onPress={() => setEditModalVisible(false)}
+                  >
+                    <Text style={styles.cancelButtonText}>취소</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.submitButton}
+                    onPress={submitEditPost}
+                  >
+                    <Text style={styles.submitButtonText}>수정하기</Text>
+                  </TouchableOpacity>
                 </View>
               </View>
             </TouchableWithoutFeedback>

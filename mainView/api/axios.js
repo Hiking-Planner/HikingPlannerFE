@@ -11,7 +11,8 @@ export const basicAxios = axios.create({
   timeout: 10000, // 10초 타임아웃 설정
 });
 
-/*// 비동기로 access token 가져오기 함수
+{/*
+// 비동기로 access token 가져오기 함수
 const getAccessToken = async () => {
   try {
     const token = await AsyncStorage.getItem('accessToken'); // 토큰 가져오기
@@ -21,7 +22,9 @@ const getAccessToken = async () => {
     console.error('토큰 가져오기 오류:', error);
     return ''; // 오류 발생 시에도 빈 문자열 반환
   }
-};*/
+};
+--> 현재 사용하지 않아서 주석 처리
+*/}
 
 // 인증이 필요한 axios 인스턴스 생성
 export const authAxios = axios.create({
