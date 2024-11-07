@@ -1,24 +1,33 @@
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { create } from 'zustand';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { persist } from 'zustand/middleware';
 
-const userInfoStore = create(
+const useUserInfoStore = create(
   persist(
     (set) => ({
-      id: 0,
-      name: "",
-      isLoggedIn: false,
-      setUserInfo: (userInfo) =>
-        set((state) => ({
-          ...state,
-          ...userInfo,
-        })),
+      userInfo: {
+        userId: '',
+        nickname: '',
+        isLoggedIn: false,
+      },
+      setUserInfo: (userInfo) => set({ userInfo }),
     }),
     {
-      name: "userInfoStorage",
-      getStorage: () => AsyncStorage, // React Native의 AsyncStorage 사용
+      name: 'userInfoStorage', // 저장되는 이름
+      storage: {
+        getItem: async (key) => {
+          const value = await AsyncStorage.getItem(key);
+          return value ? JSON.parse(value) : null;
+        },
+        setItem: async (key, value) => {
+          await AsyncStorage.setItem(key, JSON.stringify(value));
+        },
+        removeItem: async (key) => {
+          await AsyncStorage.removeItem(key);
+        },
+      },
     }
   )
 );
 
-export default userInfoStore;
+export default useUserInfoStore;

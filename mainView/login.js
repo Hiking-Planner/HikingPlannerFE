@@ -24,21 +24,21 @@ const Login = () => {
         password,
       });
 
-      const { token, /*user*/ } = response.data || {}; // 응답에서 액세스 토큰과 유저 정보 추출
+      const { token, user } = response.data || {}; // 응답에서 액세스 토큰과 유저 정보 추출
 
-      if (token /*&& user*/) {
+      if (token && user) {
         // 액세스 토큰을 AsyncStorage에 저장
         await AsyncStorage.setItem('accessToken', token);
         Alert.alert('성공', '로그인에 성공했습니다!');
         console.log("login token : ", token);
+        console.log(user);
 
-        /*// userInfoStore에 유저 정보 저장
+        // userInfoStore에 유저 정보 저장
         setUserInfo({
-          id: user.id,
-          name: user.name,
+          userId: user.userId,
+          nickname: user.nickname,
           isLoggedIn: true,
-          expiredTime: user.expiredTime,
-        });*/
+        });
 
         setTimeout(() => navigation.navigate('Home'), 100); // 로그인 후 홈 화면으로 이동
       } else {

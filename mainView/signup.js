@@ -7,6 +7,7 @@ import { basicAxios } from './api/axios'; // basicAxios 사용
 
 const SignUp = () => {
   const [id, setId] = useState('');
+  const [nickname, setNickname] = useState('');
   const [email, setEmail] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [certificationNumber, setCertificationNumber] = useState('');
@@ -75,6 +76,7 @@ const SignUp = () => {
       await basicAxios.post('/api/v1/auth/sign-up', {
         id,
         password,
+        nickname,
         email,
         phoneNumber,
         certificationNumber,
@@ -180,6 +182,15 @@ const SignUp = () => {
             : '비밀번호가 일치하지 않습니다.'}
         </Text>
       )}
+      <Text style={styles.label}>사용자 이름</Text>
+      <TextInput
+        style={styles.input}
+        mode="outlined"
+        value={nickname}
+        onChangeText={setNickname}
+        placeholder="사용자 이름을 입력하세요"
+        returnKeyType="next"
+      />
       <Text style={styles.label}>전화번호</Text>
       <TextInput
         ref={phoneInputRef}
