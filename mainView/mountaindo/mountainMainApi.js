@@ -1,4 +1,5 @@
-import React, { useRef, useState, useCallback } from 'react';
+// MountainMainApi.js
+import React, { useRef, useState, useCallback, useEffect } from 'react';
 import {
   View,
   StyleSheet,
@@ -14,6 +15,7 @@ import Route from '../scrapdo/route';
 import { useNavigation } from '@react-navigation/native';
 import MapView, { PROVIDER_GOOGLE, Marker } from 'react-native-maps';
 import { basicAxios } from '../api/axios';
+import MountainWeather from './mountainWeather';
 
 const AnimatedImageBackground =
   Animated.createAnimatedComponent(ImageBackground);
@@ -21,8 +23,10 @@ const AnimatedImageBackground =
 export default function MountainMainApi({ route }) {
   const { mountain } = route.params;
   const [routes, setRoutes] = useState([]);
-  const [refreshKey, setRefreshKey] = useState(0); // refreshKey 상태 추가
+  const [refreshKey, setRefreshKey] = useState(0);
   const scrollY = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {}, [mountain]);
 
   const headerHeight = scrollY.interpolate({
     inputRange: [0, WINDOW_HEIGHT * 0.15 * 4],
@@ -31,7 +35,6 @@ export default function MountainMainApi({ route }) {
   });
 
   const navigation = useNavigation();
-
   const latitude = mountain.centerlatlon[0];
   const longitude = mountain.centerlatlon[1];
 
@@ -91,6 +94,11 @@ export default function MountainMainApi({ route }) {
             </View>
             <Text style={styles.comment}>{mountain.mountain_comment}</Text>
           </View>
+          {/* 산 이름을 함께 전달하여 "OOO 날씨"로 표시 */}
+          <MountainWeather
+            mountainId={mountain.mountain_id}
+            mountainName={mountain.mountain_name}
+          />
           <View style={styles.mapView}>
             <Text style={styles.mapText}>{mountain.mountain_name} 지도</Text>
             <MapView
@@ -144,17 +152,11 @@ export default function MountainMainApi({ route }) {
                 </TouchableOpacity>
               </View>
               <Route
-                key={refreshKey} // key prop 추가
+                key={refreshKey}
                 mountainId={mountain.mountain_id}
                 onRoutesFetched={handleRoutesFetched}
               />
             </View>
-          </View>
-          <View style={styles.weatherView}>
-            <Text style={styles.weatherText}>
-              {mountain.mountain_name} 날씨
-            </Text>
-            <View style={styles.weather}></View>
           </View>
         </Animated.ScrollView>
       </View>
@@ -217,22 +219,6 @@ const styles = StyleSheet.create({
   comment: {
     fontSize: 13,
     color: colors.Gray,
-  },
-  weatherView: {
-    padding: 15,
-    borderBottomWidth: 8,
-    borderBottomColor: colors.vectorGray,
-    overflow: 'hidden',
-  },
-  weatherText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  weather: {
-    width: '100%',
-    height: WINDOW_HEIGHT * 0.3,
-    backgroundColor: colors.Gray,
   },
   mapView: {
     padding: 15,
