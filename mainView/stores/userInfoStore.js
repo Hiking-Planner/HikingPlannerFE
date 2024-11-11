@@ -9,8 +9,29 @@ const useUserInfoStore = create(
         userId: '',
         nickname: '',
         isLoggedIn: false,
+        phoneNumber: '',
+        birth: '',
+        introduce: '',
+        gender: '',
+        profile_image: '', // profile_image 추가
       },
-      setUserInfo: (userInfo) => set({ userInfo }),
+      setUserInfo: (newUserInfo) =>
+        set((state) => ({
+          userInfo: { ...state.userInfo, ...newUserInfo }, // 기존 상태와 병합
+        })),
+      clearUserInfo: () =>
+        set({
+          userInfo: {
+            userId: '',
+            nickname: '',
+            isLoggedIn: false,
+            phoneNumber: '',
+            birth: '',
+            introduce: '',
+            gender: '',
+            profile_image: '', // 초기화 시 profile_image 포함
+          },
+        }), // 상태 초기화 함수
     }),
     {
       name: 'userInfoStorage', // 저장되는 이름
