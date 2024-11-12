@@ -8,28 +8,27 @@ import {
   Image,
   Modal,
   Alert,
+  KeyboardAvoidingView,
+  ScrollView,
+  Platform,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import * as FileSystem from 'expo-file-system';
 import IconButton from '../sub/IconButton';
 import { WINDOW_HEIGHT } from '../sub/dimensions';
 import { useNavigation } from '@react-navigation/native';
 import { Picker } from '@react-native-picker/picker';
-import { authAxios, basicAxios } from '../api/axios';
+import { authAxios } from '../api/axios';
 import useUserInfoStore from '../stores/userInfoStore';
 
 export default function MyProfile() {
   const navigation = useNavigation();
   const { userInfo, setUserInfo } = useUserInfoStore();
 
-  const [password, setPassword] = useState('');
-  const [passwordConfirm, setPasswordConfirm] = useState('');
   const [name, setName] = useState(userInfo.nickname || '');
   const [gender, setGender] = useState(userInfo.gender);
   const [birthYear, setBirthYear] = useState(userInfo.birth);
   const [bio, setBio] = useState(userInfo.introduce || '');
   const [showYearPicker, setShowYearPicker] = useState(false);
-  const [passwordMessage, setPasswordMessage] = useState('');
   const [profileImage, setProfileImage] = useState(
     require('../../assets/logo.png')
   );
@@ -44,14 +43,11 @@ export default function MyProfile() {
       const data = response.data;
 
       if (response.status === 200) {
-        console.log('User Info:', data);
         setUserInfo(data);
         setName(data.nickname || '');
         setGender(data.gender === 'MALE' ? '남자' : '여자');
         setBirthYear(data.birth || '');
         setBio(data.introduce || '');
-        setPassword('');
-        setPasswordConfirm('');
         if (data.profile_image) {
           setProfileImage({ uri: data.profile_image });
         }
@@ -65,15 +61,13 @@ export default function MyProfile() {
 
   const updateProfileImage = async (imageUri) => {
     try {
-      // FormData 객체 생성 및 이미지 데이터 추가
       const formData = new FormData();
       formData.append('file', {
         uri: imageUri,
         name: 'profile.jpg',
-        type: 'image/jpeg', // 실제 이미지 MIME 타입
+        type: 'image/jpeg',
       });
 
-      // 이미지 업로드 요청
       const response = await authAxios.put(
         '/api/v1/auth/profile/image',
         formData,
@@ -82,7 +76,6 @@ export default function MyProfile() {
         }
       );
 
-      // 응답 확인 후 프로필 이미지 업데이트
       if (response.status === 200 && response.data.profile_image) {
         Alert.alert('성공', '프로필 이미지가 성공적으로 변경되었습니다.');
         setUserInfo({
@@ -94,8 +87,6 @@ export default function MyProfile() {
       }
     } catch (error) {
       console.error('프로필 이미지 업데이트 중 오류 발생:', error);
-
-      // 오류 메시지 출력
       Alert.alert('오류', '프로필 이미지 변경 중 오류가 발생했습니다.');
     }
   };
@@ -118,8 +109,6 @@ export default function MyProfile() {
       aspect: [1, 1],
       quality: 1,
     });
-
-    console.log('ImagePicker 결과:', result);
 
     if (!result.canceled && result.assets && result.assets.length > 0) {
       const imageUri = result.assets[0].uri;
@@ -162,31 +151,12 @@ export default function MyProfile() {
     setGender(selectedGender);
   };
 
-  const handlePasswordChange = (value) => {
-    setPassword(value);
-    checkPasswords(value, passwordConfirm);
-  };
-
-  const handlePasswordConfirmChange = (value) => {
-    setPasswordConfirm(value);
-    checkPasswords(password, value);
-  };
-
-  const checkPasswords = (password, confirmPassword) => {
-    if (confirmPassword && password) {
-      if (password === confirmPassword) {
-        setPasswordMessage('비밀번호가 일치합니다.');
-      } else {
-        setPasswordMessage('비밀번호가 일치하지 않습니다.');
-      }
-    } else {
-      setPasswordMessage('');
-    }
-  };
-
   return (
-    <View style={styles.container}>
-      <View style={styles.wrapper}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <ScrollView contentContainerStyle={styles.wrapper}>
         <View style={styles.header}>
           <IconButton
             iconName='chevron-left'
@@ -209,40 +179,10 @@ export default function MyProfile() {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>비밀번호 변경</Text>
+          <Text style={styles.sectionTitle}>닉네임</Text>
           <TextInput
             style={styles.input}
-            placeholder='비밀번호를 입력해주세요.'
-            secureTextEntry={true}
-            value={password}
-            onChangeText={handlePasswordChange}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder='비밀번호를 다시 입력해주세요.'
-            secureTextEntry={true}
-            value={passwordConfirm}
-            onChangeText={handlePasswordConfirmChange}
-          />
-          {passwordMessage ? (
-            <Text
-              style={[
-                styles.passwordMessage,
-                passwordMessage === '비밀번호가 일치합니다.'
-                  ? styles.passwordMatch
-                  : styles.passwordMismatch,
-              ]}
-            >
-              {passwordMessage}
-            </Text>
-          ) : null}
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>이름/닉네임</Text>
-          <TextInput
-            style={styles.input}
-            placeholder='이름 또는 닉네임을 입력해주세요.'
+            placeholder='닉네임을 입력해주세요.'
             value={name || null}
             onChangeText={setName}
           />
@@ -329,14 +269,14 @@ export default function MyProfile() {
             maxLength={100}
           />
         </View>
-      </View>
-    </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#ffffff' },
-  wrapper: { flex: 1, paddingHorizontal: 20 },
+  wrapper: { flexGrow: 1, paddingHorizontal: 20 },
   header: {
     height: WINDOW_HEIGHT * 0.09,
     flexDirection: 'row',
@@ -387,14 +327,6 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     backgroundColor: 'green',
   },
-  passwordMessage: {
-    marginTop: -10,
-    marginBottom: 15,
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
-  passwordMatch: { color: 'blue' },
-  passwordMismatch: { color: 'red' },
   yearPickerContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',

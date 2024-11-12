@@ -31,15 +31,20 @@ export default function MountainWeather({ mountainId, mountainName }) {
             month: 'short',
             day: 'numeric',
           });
-          const temp = item.main.temp;
+          const minTemp = item.main.temp_min;
+          const maxTemp = item.main.temp_max;
+          const feelsLike = item.main.feels_like;
+          const rainProbability = item.pop * 100;
           const iconUrl = `http://openweathermap.org/img/wn/${item.weather[0].icon}@2x.png`;
 
           return {
             date,
-            temp,
+            minTemp,
+            maxTemp,
+            feelsLike,
+            rainProbability,
             iconUrl,
             windSpeed: item.wind.speed,
-            rainProbability: item.pop * 100,
           };
         });
 
@@ -47,10 +52,11 @@ export default function MountainWeather({ mountainId, mountainName }) {
 
       const currentItem = data.list[0];
       setCurrentWeather({
-        temp: currentItem.main.temp,
+        minTemp: currentItem.main.temp_min,
+        maxTemp: currentItem.main.temp_max,
         feelsLike: currentItem.main.feels_like,
+        rainProbability: currentItem.pop * 100,
         iconUrl: `http://openweathermap.org/img/wn/${currentItem.weather[0].icon}@2x.png`,
-        windSpeed: currentItem.wind.speed,
       });
     } catch (error) {
       console.error('날씨 정보를 가져오지 못했습니다:', error);
@@ -67,9 +73,15 @@ export default function MountainWeather({ mountainId, mountainName }) {
             source={{ uri: currentWeather.iconUrl }}
             style={styles.weatherIconLarge}
           />
-          <Text style={styles.currentTemp}>{currentWeather.temp}°C</Text>
-          <Text>체감 온도: {currentWeather.feelsLike}°C</Text>
-          <Text>풍속: {currentWeather.windSpeed} m/s</Text>
+          <Text style={styles.currentTemp}>
+            {currentWeather.minTemp}°C / {currentWeather.maxTemp}°C
+          </Text>
+          <Text style={styles.currentText}>
+            체감 {currentWeather.feelsLike}°C
+          </Text>
+          <Text style={styles.currentText}>
+            강수 {currentWeather.rainProbability}%
+          </Text>
         </View>
       )}
 
@@ -78,9 +90,11 @@ export default function MountainWeather({ mountainId, mountainName }) {
           <View key={index} style={styles.weatherItem}>
             <Text style={styles.day}>{item.date}</Text>
             <Image source={{ uri: item.iconUrl }} style={styles.weatherIcon} />
-            <Text style={styles.temp}>평균: {item.temp}°C</Text>
-            <Text>풍속: {item.windSpeed} m/s</Text>
-            <Text>강수 확률: {item.rainProbability}%</Text>
+            <Text style={styles.temp}>
+              {item.minTemp}°C / {item.maxTemp}°C
+            </Text>
+            <Text style={styles.dayText}>체감 {item.feelsLike}°C</Text>
+            <Text style={styles.dayText}>강수 {item.rainProbability}%</Text>
           </View>
         ))}
       </ScrollView>
@@ -113,7 +127,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   temp: {
-    fontSize: 14,
+    fontSize: 10,
     fontWeight: 'bold',
     marginVertical: 5,
   },
@@ -128,8 +142,14 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   currentTemp: {
-    fontSize: 30,
+    fontSize: 14,
     fontWeight: 'bold',
     marginBottom: 5,
+  },
+  currentText: {
+    fontSize: 12,
+  },
+  dayText: {
+    fontSize: 11,
   },
 });
