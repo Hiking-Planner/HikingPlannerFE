@@ -1,21 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View,
-  ScrollView,
-  FlatList,
-  Text,
-  Image,
-  Pressable,
-  TouchableOpacity,
-  Modal,
-  TextInput,
-  Alert,
-  StyleSheet,
-  TouchableWithoutFeedback,
-  Keyboard,
-  Animated,
-  Easing,
-} from 'react-native';
+import { View, ScrollView, FlatList, Text, Image, Pressable, TouchableOpacity, Modal, 
+         TextInput, Alert, StyleSheet, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Footer from './footer';
 import Header from './Header/commu_header';
@@ -35,6 +20,7 @@ export default function Commu() {
   const [newComment, setNewComment] = useState('');
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
+  const [mountainName, setMountainName] = useState('');
   const [images, setImages] = useState([]);
   const [isMenuVisible, setIsMenuVisible] = useState(false);
 
@@ -98,7 +84,7 @@ export default function Commu() {
       const formData = new FormData();
       formData.append('title', title);
       formData.append('content', content);
-      formData.append('mountainName', 'none');
+      formData.append('mountainName', mountainName);
 
       images.forEach((image, index) => {
         formData.append('image', {
@@ -248,6 +234,12 @@ export default function Commu() {
                 />
                 <TextInput
                   style={[styles.input, styles.contentInput]}
+                  placeholder='산 이름을 입력하세요'
+                  value={mountainName}
+                  onChangeText={setMountainName}
+                />
+                <TextInput
+                  style={[styles.input, styles.contentInput]}
                   placeholder='내용을 입력하세요'
                   value={content}
                   onChangeText={setContent}
@@ -328,7 +320,7 @@ export default function Commu() {
                         style={styles.commentContainer}
                       >
                         <Text style={styles.commentUserName}>
-                          {comment.userName}
+                          {comment.nickname}
                         </Text>
                         <Text style={styles.commentText}>
                           {comment.content}

@@ -3,10 +3,11 @@ import { View, StyleSheet, Alert, Text } from 'react-native';
 import { TextInput, Button } from 'react-native-paper';
 import colors from './sub/colors';
 import { useNavigation } from '@react-navigation/native';
-import { basicAxios } from './api/axios'; // basicAxios 사용
+import { basicAxios } from './api/axios';
 
 const SignUp = () => {
   const [id, setId] = useState('');
+  const [name, setName] = useState('');
   const [nickname, setNickname] = useState('');
   const [email, setEmail] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -16,7 +17,7 @@ const SignUp = () => {
   const [isEmailVerified, setIsEmailVerified] = useState(false);
   const [isCertificationSent, setIsCertificationSent] = useState(false);
   const navigation = useNavigation();
-  const phoneInputRef = useRef(null); // 전화번호 입력 필드 참조
+  const phoneInputRef = useRef(null);
 
   // 이메일 인증 요청
   const sendEmailCertification = async () => {
@@ -77,9 +78,9 @@ const SignUp = () => {
         id,
         password,
         nickname,
+        name,
         email,
         phoneNumber,
-        certificationNumber,
       });
       Alert.alert('성공', '회원가입에 성공했습니다!');
       navigation.navigate('Login'); // 로그인 화면으로 이동
@@ -182,13 +183,22 @@ const SignUp = () => {
             : '비밀번호가 일치하지 않습니다.'}
         </Text>
       )}
-      <Text style={styles.label}>사용자 이름</Text>
+      <Text style={styles.label}>닉네임</Text>
       <TextInput
         style={styles.input}
         mode="outlined"
         value={nickname}
         onChangeText={setNickname}
-        placeholder="사용자 이름을 입력하세요"
+        placeholder="닉네임을 입력하세요"
+        returnKeyType="next"
+      />
+      <Text style={styles.label}>이름</Text>
+      <TextInput
+        style={styles.input}
+        mode="outlined"
+        value={name}
+        onChangeText={setName}
+        placeholder="성함을 입력하세요"
         returnKeyType="next"
       />
       <Text style={styles.label}>전화번호</Text>
