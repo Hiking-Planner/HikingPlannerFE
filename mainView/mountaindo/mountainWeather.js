@@ -1,4 +1,3 @@
-// MountainWeather.js
 import React, { useEffect, useState } from 'react';
 import { View, Text, Image, StyleSheet, ScrollView } from 'react-native';
 import { basicAxios } from '../api/axios';
@@ -7,14 +6,34 @@ import colors from '../sub/colors';
 export default function MountainWeather({ mountainId, mountainName }) {
   const [weatherData, setWeatherData] = useState([]);
   const [currentWeather, setCurrentWeather] = useState(null);
+  const [sunInfo, setSunInfo] = useState({ sunrise: '0500', sunset: '1800' });
+  const [clothingRecommendation, setClothingRecommendation] = useState('');
 
   useEffect(() => {
     fetchWeather(mountainId);
+    fetchSunInfo(mountainId);
   }, [mountainId]);
+
+  useEffect(() => {
+    if (currentWeather?.feelsLike) {
+      fetchClothingRecommendation(currentWeather.feelsLike);
+    }
+  }, [currentWeather]);
+
+  const fetchClothingRecommendation = async (temp) => {
+    const requestUrl = `/api/v1/auth/clothesrecommend?temp=${temp}`;
+
+    try {
+      const response = await basicAxios.get(requestUrl);
+      setClothingRecommendation(response.data); // 서버 응답을 그대로 저장
+    } catch (error) {
+      console.error('옷차림 추천 정보를 가져오지 못했습니다:', error);
+    }
+  };
 
   const fetchWeather = async (mountainId) => {
     try {
-      const requestUrl = `/api/v1/auth/api/weather/{mtid}?mtid=${mountainId}`;
+      const requestUrl = `/api/v1/auth/api/weather/${mountainId}`;
       const response = await basicAxios.get(requestUrl);
 
       const data =
@@ -63,6 +82,26 @@ export default function MountainWeather({ mountainId, mountainName }) {
     }
   };
 
+  const fetchSunInfo = async (mountainId) => {
+    const today = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+    const requestUrl = `/api/v1/auth/api/suninfo/${mountainId}?dateinfo=${today}`;
+
+    try {
+      const response = await basicAxios.get(requestUrl);
+      const data =
+        typeof response.data === 'string'
+          ? JSON.parse(response.data)
+          : response.data;
+
+      setSunInfo({
+        sunrise: `${data.sunrise.slice(0, 2)}:${data.sunrise.slice(2)}`,
+        sunset: `${data.sunset.slice(0, 2)}:${data.sunset.slice(2)}`,
+      });
+    } catch (error) {
+      console.error('일출 및 일몰 정보를 가져오지 못했습니다:', error);
+    }
+  };
+
   return (
     <View style={styles.weatherContainer}>
       <Text style={styles.weatherTitle}>{mountainName} 날씨</Text>
@@ -82,6 +121,32 @@ export default function MountainWeather({ mountainId, mountainName }) {
           <Text style={styles.currentText}>
             강수 {currentWeather.rainProbability}%
           </Text>
+
+          {/* 옷차림 추천 문구 */}
+          <View style={styles.outfitRecommendation}>
+            <Text style={styles.outfitHeaderText}>오늘의 옷차림 정보</Text>
+            <Text style={styles.outfitText}>
+              {'\n'}
+              {clothingRecommendation ||
+                '꽃샘 추위와 바람을 막아 줄 바람막이, 스트레치 소재의 긴바지를 추천해요. 낮과 밤의 일교차가 심하고 날씨가 변덕스러우니 얇은 옷을 여러 겹 입으세요!'}
+            </Text>
+          </View>
+
+          {/* 일출 및 일몰 정보 */}
+          <View style={styles.sunInfoContainer}>
+            <View style={styles.sunriseContainer}>
+              <Text style={styles.sunriseText}>
+                일출{'\n'}
+                {sunInfo.sunrise}
+              </Text>
+            </View>
+            <View style={styles.sunsetContainer}>
+              <Text style={styles.sunsetText}>
+                일몰{'\n'}
+                {sunInfo.sunset}
+              </Text>
+            </View>
+          </View>
         </View>
       )}
 
@@ -117,6 +182,55 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 20,
   },
+  outfitRecommendation: {
+    backgroundColor: '#fff9c4', // 연한 노란 파스텔톤
+    padding: 10,
+    borderRadius: 10,
+    marginVertical: 10,
+  },
+  outfitHeaderText: {
+    color: '#ff8c00', // 원하는 색상, 예: 오렌지 계열
+    fontSize: 13,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  outfitText: {
+    color: 'black',
+    fontSize: 11,
+    textAlign: 'center',
+  },
+  sunInfoContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '100%',
+    marginTop: 10,
+  },
+  sunriseContainer: {
+    backgroundColor: '#b3e5fc', // 연한 파란색 파스텔톤
+    padding: 10,
+    borderRadius: 10,
+    marginHorizontal: 5,
+    flex: 1,
+  },
+  sunsetContainer: {
+    backgroundColor: '#ffe0b2', // 연한 주황색 파스텔톤
+    padding: 10,
+    borderRadius: 10,
+    marginHorizontal: 5,
+    flex: 1,
+  },
+  sunriseText: {
+    color: 'green',
+    fontSize: 14,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  sunsetText: {
+    color: '#ff4500',
+    fontSize: 14,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
   weatherItem: {
     alignItems: 'center',
     marginRight: 15,
@@ -132,13 +246,13 @@ const styles = StyleSheet.create({
     marginVertical: 5,
   },
   weatherIcon: {
-    width: 40,
-    height: 40,
+    width: 50,
+    height: 50,
     marginBottom: 5,
   },
   weatherIconLarge: {
-    width: 55,
-    height: 55,
+    width: 70,
+    height: 70,
     marginBottom: 10,
   },
   currentTemp: {

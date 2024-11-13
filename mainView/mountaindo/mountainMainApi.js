@@ -113,6 +113,12 @@ export default function MountainMainApi({ route }) {
               {routes.map((route, index) => {
                 const startPoint = JSON.parse(route.start_point);
                 const endPoint = JSON.parse(route.end_point);
+                if (!startPoint || startPoint.length < 2) {
+                  console.warn(
+                    `Invalid startPoint for route ${route.trail_name}`
+                  );
+                  return null; // startPoint가 null이거나 유효하지 않으면 렌더링하지 않음
+                }
                 return (
                   <Marker
                     key={index}
