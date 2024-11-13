@@ -14,7 +14,7 @@ import { WINDOW_HEIGHT } from '../sub/dimensions';
 import Route from '../scrapdo/route';
 import { useNavigation } from '@react-navigation/native';
 import MapView, { PROVIDER_GOOGLE, Marker } from 'react-native-maps';
-import { basicAxios } from '../api/axios';
+import { basicAxios, authAxios } from '../api/axios';
 import MountainWeather from './mountainWeather';
 
 const AnimatedImageBackground =
@@ -44,9 +44,11 @@ export default function MountainMainApi({ route }) {
 
   const handleRefresh = async () => {
     try {
-      await basicAxios.get(
+      console.log('mountainId:', mountain.mountain_id);
+      const response = await authAxios.get(
         `/api/v1/auth/updatetrail?mountainid=${mountain.mountain_id}`
       );
+      console.log('API response:', response.data);
       setRefreshKey((prevKey) => prevKey + 1);
     } catch (error) {
       console.error(error);
@@ -131,6 +133,7 @@ export default function MountainMainApi({ route }) {
                         trail_id: route.trail_id,
                         name: route.trail_name,
                         endPoint: endPoint,
+                        mountainId: mountain.mountain_id,
                       })
                     }
                   >
@@ -144,6 +147,17 @@ export default function MountainMainApi({ route }) {
                 );
               })}
             </MapView>
+            <TouchableOpacity
+              style={styles.startHikingButton}
+              onPress={() =>
+                navigation.navigate('HikingMapView', {
+                  coordinates: [], // 기본 좌표
+                  mountainId: mountain.mountain_id, // 산 ID
+                })
+              }
+            >
+              <Text style={styles.startHikingText}>바로 등산 시작하기</Text>
+            </TouchableOpacity>
             <View style={styles.roadView}>
               <View style={styles.roadHeader}>
                 <Text style={styles.roadText}>총 {routes.length} 개 코스</Text>
@@ -269,5 +283,20 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: 'bold',
     marginBottom: 7,
+  },
+  startHikingButton: {
+    width: '100%',
+    alignItems: 'center',
+    marginTop: 10,
+    padding: 10,
+    borderColor: colors.mintGreen,
+    borderWidth: 2,
+    borderRadius: 5,
+    backgroundColor: colors.mintGreen,
+  },
+  startHikingText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: colors.white,
   },
 });
