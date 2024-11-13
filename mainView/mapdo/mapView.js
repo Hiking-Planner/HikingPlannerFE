@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   StyleSheet,
@@ -14,11 +14,12 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import MapView, { PROVIDER_GOOGLE, Polyline, Marker } from 'react-native-maps';
 import { WINDOW_HEIGHT } from '../sub/dimensions';
 import * as Location from 'expo-location';
-import { basicAxios } from '../api/axios';
+import { basicAxios, authAxios } from '../api/axios';
 import RoadWarningButton from './RoadWarningButton';
 import StartStopButton from './StartStopButton';
 import colors from '../sub/colors';
 import SosButton from './SosButton';
+import _ from 'lodash';
 
 export const HikingMapView = () => {
   const [location, setLocation] = useState(null);
@@ -34,19 +35,24 @@ export const HikingMapView = () => {
   const routeParams = useRoute().params;
   const coordinates = routeParams?.coordinates || [];
 
-  const mapRef = React.useRef(null);
+  const mapRef = useRef(null);
 
   useEffect(() => {
-    initializeLocation();
-    loadReportsFromStorage();
+    const initializeData = async () => {
+      await Promise.all([initializeLocation(), loadReportsFromStorage()]);
+    };
+    initializeData();
   }, []);
 
   useEffect(() => {
-    if (tracking) {
-      startLocationTracking();
-    } else {
-      stopLocationTracking();
-    }
+    const toggleTracking = async () => {
+      if (tracking) {
+        await startLocationTracking();
+      } else {
+        stopLocationTracking();
+      }
+    };
+    toggleTracking();
   }, [tracking]);
 
   const initializeLocation = async () => {
@@ -76,8 +82,8 @@ export const HikingMapView = () => {
     const locationSubscription = await Location.watchPositionAsync(
       {
         accuracy: Location.Accuracy.BestForNavigation,
-        timeInterval: 20000,
-        distanceInterval: 5,
+        timeInterval: 30000, // 시간 간격을 늘림
+        distanceInterval: 10, // 최소 거리 기준을 설정
       },
       (newLocation) => {
         const { latitude, longitude } = newLocation.coords;
@@ -147,15 +153,13 @@ export const HikingMapView = () => {
       }));
 
       const hikingData = {
-        recordid: 0,
-        userid: '1',
         mtid: 1,
         hikingTrailData: routeCoordinates,
         savetime: Date.now(),
       };
 
       try {
-        await basicAxios.post(`/api/v1/auth/hiking_record`, hikingData);
+        await authAxios.post(`/api/v1/auth/hiking_record`, hikingData);
         console.log('Hiking record data sent to server');
       } catch (error) {
         console.error('Error sending hiking record data:', error);
@@ -191,6 +195,10 @@ export const HikingMapView = () => {
     }
   };
 
+  const handleBackButtonPress = _.debounce(() => {
+    navigation.goBack();
+  }, 300);
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -203,10 +211,7 @@ export const HikingMapView = () => {
     <View style={styles.screen}>
       <View style={styles.header}>
         <View style={styles.leftBtn}>
-          <IconButton
-            iconName='chevron-left'
-            onPress={() => navigation.goBack()}
-          />
+          <IconButton iconName='chevron-left' onPress={handleBackButtonPress} />
         </View>
         <Text style={styles.headerTitle}>등산중</Text>
       </View>
@@ -274,32 +279,31 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   header: {
-    height: WINDOW_HEIGHT * 0.09,
+    height: WINDOW_HEIGHT * 0.07,
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     marginTop: WINDOW_HEIGHT * 0.035,
+    position: 'relative',
   },
   leftBtn: {
-    flex: 2,
+    marginTop: 10,
+    position: 'absolute',
+    left: 10,
     zIndex: 10,
   },
   headerTitle: {
-    flex: 7,
-    textAlign: 'center',
+    marginTop: 10,
     fontSize: 16,
     fontWeight: 'bold',
-    marginTop: 23,
+    textAlign: 'center',
+    width: '100%', // 제목을 중앙에 고정하기 위해 전체 너비 사용
   },
+
   map: {
     width: '100%',
     height: '90%',
     paddingBottom: WINDOW_HEIGHT * 0.1,
-  },
-  leftBtn: {
-    position: 'absolute',
-    top: 30,
-    left: '1%',
-    margin: 5,
   },
   loadingContainer: {
     flex: 1,
@@ -332,7 +336,7 @@ const styles = StyleSheet.create({
     borderTopColor: colors.Gray,
     backgroundColor: 'white',
     flexDirection: 'row',
-    justifyContent: 'space-around', // 각 메뉴 아이템을 균등하게 분배
+    justifyContent: 'space-around',
     alignItems: 'center',
     paddingVertical: 10,
   },

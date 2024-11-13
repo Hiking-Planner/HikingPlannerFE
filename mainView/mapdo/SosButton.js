@@ -7,57 +7,71 @@ import {
   Modal,
   Alert,
 } from 'react-native';
-import axios from 'axios';
-import * as Location from 'expo-location';
 import { Audio } from 'expo-av';
 import colors from '../sub/colors';
+import { authAxios } from '../api/axios';
 
-const SosButton = ({ userId, location, userName }) => {
+const SosButton = ({ location, userName }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [autoSendTimeout, setAutoSendTimeout] = useState(null);
   const [sosInfo, setSosInfo] = useState(null);
   const [sound, setSound] = useState(null);
 
   const playSiren = async () => {
-    const { sound } = await Audio.Sound.createAsync(
-      require('../../assets/siren.mp3')
-    );
-    setSound(sound);
-    await sound.playAsync();
+    try {
+      if (sound) {
+        await stopSiren();
+      }
+
+      const { sound: newSound } = await Audio.Sound.createAsync(
+        require('../../assets/siren.mp3')
+      );
+      setSound(newSound);
+      newSound.setOnPlaybackStatusUpdate((status) => {
+        if (status.didJustFinish) {
+          stopSiren();
+        }
+      });
+      await newSound.playAsync();
+    } catch (error) {
+      console.error('Error playing siren:', error);
+    }
   };
 
   const stopSiren = async () => {
-    if (sound) {
-      await sound.stopAsync();
+    try {
+      if (sound) {
+        await sound.stopAsync();
+        await sound.unloadAsync();
+        setSound(null);
+      }
+    } catch (error) {
+      console.error('Error stopping siren:', error);
     }
   };
 
   useEffect(() => {
-    return sound
-      ? () => {
-          sound.unloadAsync();
-        }
-      : undefined;
+    return () => {
+      if (sound) {
+        sound.unloadAsync();
+      }
+    };
   }, [sound]);
 
   const handleSosPress = async () => {
     await playSiren();
 
     try {
-      const response = await axios.post(
-        'http://ec2-3-143-125-20.us-east-2.compute.amazonaws.com:8080/api/v1/auth/sos',
-        {
-          userid: userId,
-          latitude: location.latitude,
-          longitude: location.longitude,
-          date: new Date().toISOString(),
-        }
-      );
+      const response = await authAxios.post('/api/v1/auth/sos', {
+        latitude: location.latitude,
+        longitude: location.longitude,
+        date: new Date().toISOString(),
+      });
 
       const { data } = response;
       setSosInfo(data);
 
-      console.log('National Position Number:', data.nationalposnum); // 국가지점번호 콘솔에 출력
+      console.log('National Position Number:', data.nationalposnum);
 
       setModalVisible(true);
 
@@ -76,18 +90,14 @@ const SosButton = ({ userId, location, userName }) => {
 
   const sendSosMessage = async (sosInfo) => {
     try {
-      const response = await axios.post(
-        'http://ec2-3-143-125-20.us-east-2.compute.amazonaws.com:8080/api/v1/auth/sendsosmessage',
-        {
-          username: sosInfo.username,
-          phone_number: sosInfo.phone_number,
-          nationalposnum: sosInfo.nationalposnum,
-          time: sosInfo.time,
-        }
-      );
+      const response = await authAxios.post('/api/v1/auth/sendsosmessage', {
+        nationalposnum: sosInfo.nationalposnum,
+        time: sosInfo.time,
+      });
 
       console.log('SOS message sent:', response.data);
       Alert.alert('문자 발송', 'SOS 메시지가 119에 정상적으로 전송되었습니다.');
+      await stopSiren();
     } catch (error) {
       console.error('Error sending SOS message:', error);
       Alert.alert('Error', 'Error sending SOS message');
