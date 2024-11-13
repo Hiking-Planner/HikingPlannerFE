@@ -34,6 +34,7 @@ export const HikingMapView = () => {
   const navigation = useNavigation();
   const routeParams = useRoute().params;
   const coordinates = routeParams?.coordinates || [];
+  const mountainId = routeParams?.mountainId;
 
   const mapRef = useRef(null);
 
@@ -153,13 +154,13 @@ export const HikingMapView = () => {
       }));
 
       const hikingData = {
-        mtid: 1,
+        mtid: mountainId,
         hikingTrailData: routeCoordinates,
         savetime: Date.now(),
       };
 
       try {
-        await authAxios.post(`/api/v1/auth/hiking_record`, hikingData);
+        await basicAxios.post(`/api/v1/auth/hiking_record`, hikingData);
         console.log('Hiking record data sent to server');
       } catch (error) {
         console.error('Error sending hiking record data:', error);

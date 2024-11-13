@@ -139,6 +139,7 @@ export default function RouteMore({ route }) {
             onPress={() =>
               navigation.navigate('HikingMapView', {
                 coordinates: convertedCoordinates,
+                mountainId: route.params.mountainId,
               })
             }
           >
