@@ -160,7 +160,7 @@ export const HikingMapView = () => {
       };
 
       try {
-        await basicAxios.post(`/api/v1/auth/hiking_record`, hikingData);
+        await authAxios.post(`/api/v1/auth/hiking_record`, hikingData);
         console.log('Hiking record data sent to server');
       } catch (error) {
         console.error('Error sending hiking record data:', error);
