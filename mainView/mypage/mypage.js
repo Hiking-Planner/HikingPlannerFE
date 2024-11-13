@@ -92,7 +92,7 @@ export default function Mypage() {
 
           {isLoggedIn && (
             <>
-              <View style={styles.section}>
+              {/* <View style={styles.section}>
                 <View style={styles.header}>
                   <Text style={styles.headerText}>마이 컨텐츠</Text>
                 </View>
@@ -127,7 +127,7 @@ export default function Mypage() {
                   />
                   <Text style={styles.menuText}>나의 댓글</Text>
                 </TouchableOpacity>
-              </View>
+              </View> */}
               <View style={styles.divider} />
               <View style={styles.section}>
                 <View style={styles.header}>
