@@ -10,10 +10,7 @@ export default function Header() {
       <Text style={styles.textLogo}>커뮤니티</Text>
       <View style={styles.btns}>
         <IconButton iconName='search' />
-        <IconButton
-          iconName='bookmark'
-          onPress={() => navigation.navigate('ScrapMore')}
-        />
+        <IconButton iconName='bookmark' />
         <IconButton iconName='bell' />
       </View>
     </View>

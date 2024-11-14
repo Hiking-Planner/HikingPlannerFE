@@ -13,14 +13,8 @@ export default function Mountain() {
     <View style={styles.container}>
       <View style={styles.wrapper}>
         <View style={styles.btns}>
-          <IconButton
-            iconName='search'
-            onPress={() => navigation.navigate('SearchAdd')}
-          />
-          <IconButton
-            iconName='bookmark'
-            onPress={() => navigation.navigate('ScrapMore')}
-          />
+          <IconButton iconName='search' />
+          <IconButton iconName='bookmark' />
           <IconButton iconName='bell' />
         </View>
         <ScrollView
