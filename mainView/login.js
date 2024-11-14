@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { View, StyleSheet, Alert, Image, Text, Keyboard } from 'react-native';
+import { View, StyleSheet, Alert, Image, Text, Keyboard, TouchableOpacity } from 'react-native';
 import { TextInput, Button } from 'react-native-paper';
 import colors from './sub/colors';
 import { useNavigation } from '@react-navigation/native';
@@ -86,10 +86,9 @@ const Login = () => {
           signIn();
         }}
         right={
-          <TextInput.Icon
-            icon={() => <Image source={showPassword ? openEyeIcon : closeEyeIcon} style={{ width: 24, height: 24 }} />}
-            onPress={() => setShowPassword(!showPassword)}
-          />
+          <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+            <Image source={showPassword ? openEyeIcon : closeEyeIcon} style={{ width: 24, height: 24 }} />
+          </TouchableOpacity>
         }
       />
 

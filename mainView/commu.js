@@ -320,103 +320,93 @@ export default function Commu() {
       </Modal>
 
       {/* 게시글 상세 모달 */}
-      <Modal animationType='slide' transparent visible={isPostModalVisible}>
+      <Modal animationType="slide" transparent visible={isPostModalVisible}>
         <TouchableWithoutFeedback onPress={() => setPostModalVisible(false)}>
           <View style={styles.modalContainer}>
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
               <View style={styles.modalContent}>
                 <View style={styles.menuIconContainer}>
-                  <TouchableOpacity
-                    onPress={toggleMenu}
-                    style={styles.menuIcon}
-                  >
-                    <Icon name='dots-vertical' size={24} color='#000' />
+                  <TouchableOpacity onPress={toggleMenu} style={styles.menuIcon}>
+                    <Icon name="dots-vertical" size={24} color="#000" />
                   </TouchableOpacity>
                 </View>
-                <Image
-                  source={{ uri: selectedPost?.imageUrl }}
-                  style={styles.postImage}
-                />
-                <View style={styles.modalTextContainer}>
-                  <Text style={styles.postTitle}>{selectedPost?.title}</Text>
-                  <Text style={styles.postText}>{selectedPost?.content}</Text>
 
-                  {/* 수정/삭제 버튼 조건 추가 */}
-                  {isMenuVisible && selectedPost?.nickname === nickname && (
-                    <View style={styles.iconContainer}>
-                      <TouchableOpacity
-                        onPress={() => {
-                          setPostModalVisible(false);
-                          openEditModal(selectedPost);
-                        }}
-                      >
-                        <Icon name='pencil' size={24} color='#000' />
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        onPress={() => deletePost(selectedPost.boardId)}
-                      >
-                        <Icon name='delete' size={24} color='red' />
-                      </TouchableOpacity>
-                    </View>
-                  )}
-                  <ScrollView style={styles.commentList} contentContainerStyle={{ flexGrow: 1 }}>
-                    {comments.map((comment) => (
-                      <View key={comment.commentId} style={styles.commentContainer}>
-                        <Text style={styles.commentUserName}>{comment.nickname}</Text>
-                        {/* 댓글 내용 */}
-                        {editingCommentId === comment.commentId ? (
-                          <>
-                            <TextInput
-                              style={styles.commentInput}
-                              value={editedComment}
-                              onChangeText={setEditedComment}
-                            />
-                            <TouchableOpacity
-                              onPress={() => submitEditComment(comment.commentId)}
-                              style={styles.commentButton}
-                            >
-                              <Text style={styles.commentButtonText}>수정 완료</Text>
-                            </TouchableOpacity>
-                          </>
-                        ) : (
-                          <Text style={styles.commentText}>{comment.content}</Text>
-                        )}
+                {/* Set ScrollView inside modalContent to control scroll behavior */}
+                <ScrollView style={styles.modalScrollContainer}>
+                  <Image source={{ uri: selectedPost?.imageUrl }} style={styles.postImage} />
+                  <View style={styles.modalTextContainer}>
+                    <Text style={styles.postTitle}>{selectedPost?.title}</Text>
+                    <Text style={styles.postText}>{selectedPost?.content}</Text>
 
-                        {/* 수정/삭제 버튼을 표시할 조건과 콘솔 로그 추가 */}
-                        {comment.nickname?.trim() === nickname?.trim() && (
-                          <View style={styles.commentActions}>
-                            <TouchableOpacity
-                              onPress={() => {
-                                setEditingCommentId(comment.commentId);
-                                setEditedComment(comment.content);
-                              }}
-                            >
-                              <Text style={styles.editDeleteText}>수정</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity onPress={() => deleteComment(comment.commentId)}>
-                              <Text style={styles.editDeleteText}>삭제</Text>
-                            </TouchableOpacity>
-                          </View>
-                        )}
+                    {/* Edit/Delete buttons */}
+                    {isMenuVisible && selectedPost?.nickname?.trim().toLowerCase() === nickname?.trim().toLowerCase() && (
+                      <View style={styles.iconContainer}>
+                        <TouchableOpacity
+                          onPress={() => {
+                            setPostModalVisible(false);
+                            openEditModal(selectedPost);
+                          }}
+                        >
+                          <Icon name="pencil" size={24} color="#000" />
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => deletePost(selectedPost.boardId)}>
+                          <Icon name="delete" size={24} color="red" />
+                        </TouchableOpacity>
                       </View>
-                    ))}
-                  </ScrollView>
-                  {/* 댓글 입력 */}
-                  <View style={styles.commentInputContainer}>
-                    <TextInput
-                      style={styles.commentInput}
-                      placeholder='댓글을 입력하세요'
-                      value={newComment}
-                      onChangeText={setNewComment}
-                    />
-                    <TouchableOpacity
-                      onPress={submitComment}
-                      style={styles.commentButton}
-                    >
-                      <Text style={styles.commentButtonText}>작성</Text>
-                    </TouchableOpacity>
+                    )}
+
+                    <View style={styles.commentSection}>
+                      <ScrollView style={styles.commentList} contentContainerStyle={{ flexGrow: 1 }}>
+                        {comments.map((comment) => (
+                          <View key={comment.commentId} style={styles.commentContainer}>
+                            <Text style={styles.commentUserName}>{comment.nickname}</Text>
+                            {editingCommentId === comment.commentId ? (
+                              <>
+                                <TextInput
+                                  style={styles.commentInput}
+                                  value={editedComment}
+                                  onChangeText={setEditedComment}
+                                />
+                                <TouchableOpacity onPress={() => submitEditComment(comment.commentId)} style={styles.commentButton}>
+                                  <Text style={styles.commentButtonText}>수정 완료</Text>
+                                </TouchableOpacity>
+                              </>
+                            ) : (
+                              <Text style={styles.commentText}>{comment.content}</Text>
+                            )}
+                            {comment.nickname?.trim() === nickname?.trim() && (
+                              <View style={styles.commentActions}>
+                                <TouchableOpacity
+                                  onPress={() => {
+                                    setEditingCommentId(comment.commentId);
+                                    setEditedComment(comment.content);
+                                  }}
+                                >
+                                  <Text style={styles.editDeleteText}>수정</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity onPress={() => deleteComment(comment.commentId)}>
+                                  <Text style={styles.editDeleteText}>삭제</Text>
+                                </TouchableOpacity>
+                              </View>
+                            )}
+                          </View>
+                        ))}
+                      </ScrollView>
+
+                      <View style={styles.commentInputContainer}>
+                        <TextInput
+                          style={styles.commentInput}
+                          placeholder="댓글을 입력하세요"
+                          value={newComment}
+                          onChangeText={setNewComment}
+                        />
+                        <TouchableOpacity onPress={submitComment} style={styles.commentButton}>
+                          <Text style={styles.commentButtonText}>작성</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
                   </View>
-                </View>
+                </ScrollView>
               </View>
             </TouchableWithoutFeedback>
           </View>
@@ -542,10 +532,15 @@ const styles = StyleSheet.create({
   modalContent: {
     flex: 1,
     width: '90%',
+    maxHeight: '80%',
     backgroundColor: '#fff',
     borderRadius: 10,
     padding: 20,
     position: 'relative',
+  },
+  modalScrollContainer: {
+    flexGrow: 1,
+    maxHeight: '100%',
   },
   modalTitle: {
     fontSize: 18,
