@@ -1,30 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import {
   View,
-  ScrollView,
   FlatList,
   Text,
   Image,
   Pressable,
-  TouchableOpacity,
   Modal,
   TextInput,
   Alert,
   StyleSheet,
   TouchableWithoutFeedback,
   Keyboard,
+  ScrollView,
+  TouchableOpacity,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import Footer from './footer';
-import Header from './Header/commu_header';
-import { WINDOW_WIDTH, WINDOW_HEIGHT } from './sub/dimensions';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import * as ImagePicker from 'expo-image-picker';
-import { basicAxios, authAxios } from './api/axios';
-import userInfoStore from './stores/userInfoStore';
+import { authAxios } from '../api/axios';
+import userInfoStore from '../stores/userInfoStore';
+import { WINDOW_HEIGHT } from '../sub/dimensions';
 
-export default function Commu() {
-  const navigation = useNavigation();
+export default function MyPost() {
   const [isModalVisible, setModalVisible] = useState(false);
   const [isPostModalVisible, setPostModalVisible] = useState(false);
   const [isEditModalVisible, setEditModalVisible] = useState(false);
@@ -37,11 +33,11 @@ export default function Commu() {
   const [mountainName, setMountainName] = useState('');
   const [images, setImages] = useState([]);
   const [isMenuVisible, setIsMenuVisible] = useState(false);
-  const [editingCommentId, setEditingCommentId] = useState(null); // 수정 중인 댓글 ID
-  const [editedComment, setEditedComment] = useState(''); // 수정할 댓글 내용
+  const [editingCommentId, setEditingCommentId] = useState(null);
+  const [editedComment, setEditedComment] = useState('');
 
-  // 로그인된 사용자 닉네임 가져오기
-  const { nickname } = userInfoStore((state) => state.userInfo);
+  // 로그인된 사용자 정보 가져오기
+  const { userId, nickname } = userInfoStore((state) => state.userInfo);
 
   useEffect(() => {
     if (!nickname) {
@@ -51,28 +47,32 @@ export default function Commu() {
     }
   }, [nickname]);
 
-  // 게시물 불러오기
+  // 특정 사용자의 게시물 불러오기
   const fetchPosts = async () => {
     try {
-      const response = await basicAxios.get('/api/v1/auth/boards');
+      const response = await authAxios.get(
+        `/api/v1/auth/boards/user/${userId}`
+      );
       setPosts(response.data);
     } catch (error) {
-      console.error('게시물 불러오기 실패:', error.message);
-      Alert.alert('오류', '게시물을 불러오는 데 실패했습니다.');
+      console.error('사용자 게시물 불러오기 실패:', error.message);
+      Alert.alert('오류', '사용자 게시물을 불러오는 데 실패했습니다.');
     }
   };
 
   useEffect(() => {
-    fetchPosts();
-  }, []);
+    if (userId) {
+      fetchPosts();
+    }
+  }, [userId]);
 
   // 댓글 불러오기
   const fetchComments = async (boardId) => {
     try {
-      const response = await basicAxios.get(
+      const response = await authAxios.get(
         `/api/v1/auth/comments?boardId=${boardId}`
       );
-      setComments(response.data); // 서버 응답을 그대로 상태로 설정
+      setComments(response.data);
     } catch (error) {
       console.error('댓글 불러오기 실패:', error.message);
       Alert.alert('오류', '댓글을 불러오는 데 실패했습니다.');
@@ -102,7 +102,7 @@ export default function Commu() {
       });
       setEditingCommentId(null);
       setEditedComment('');
-      fetchComments(selectedPost.boardId); // 댓글 목록 새로고침
+      fetchComments(selectedPost.boardId);
     } catch (error) {
       console.error('댓글 수정 실패:', error.message);
       Alert.alert('오류', '댓글 수정에 실패했습니다.');
@@ -113,7 +113,7 @@ export default function Commu() {
   const deleteComment = async (commentId) => {
     try {
       await authAxios.delete(`/api/v1/auth/comments/${commentId}`);
-      fetchComments(selectedPost.boardId); // 댓글 목록 새로고침
+      fetchComments(selectedPost.boardId);
     } catch (error) {
       console.error('댓글 삭제 실패:', error.message);
       Alert.alert('오류', '댓글 삭제에 실패했습니다.');
@@ -230,7 +230,7 @@ export default function Commu() {
     setPostModalVisible(true);
     fetchComments(post.boardId);
     setIsMenuVisible(false);
-    console.log('Selected Post User ID:', post.nickname);
+    console.log('Selected Post User ID:', post.user.nickname);
   };
 
   const toggleMenu = () => {
@@ -239,7 +239,6 @@ export default function Commu() {
 
   return (
     <View style={{ flex: 1 }}>
-      <Header />
       <FlatList
         data={posts}
         keyExtractor={(item) => item.boardId.toString()}
@@ -260,18 +259,6 @@ export default function Commu() {
         )}
         contentContainerStyle={styles.scrollView}
       />
-
-      <TouchableOpacity
-        style={styles.createButton}
-        onPress={() => setModalVisible(true)}
-      >
-        <Icon name='pencil' size={20} color='#fff' />
-        <Text style={styles.createButtonText}>작성하기</Text>
-      </TouchableOpacity>
-
-      <View style={styles.footerContainer}>
-        <Footer />
-      </View>
 
       {/* 게시글 작성 모달 */}
       <Modal animationType='slide' transparent visible={isModalVisible}>
@@ -310,7 +297,6 @@ export default function Commu() {
                 >
                   <Text style={styles.selectImageButtonText}>이미지 선택</Text>
                 </TouchableOpacity>
-                {/* 이미지 미리보기 영역 */}
                 <View style={styles.imagePreviewContainer}>
                   {images.map((image, index) => (
                     <Image
@@ -355,7 +341,6 @@ export default function Commu() {
                   </TouchableOpacity>
                 </View>
 
-                {/* Set ScrollView inside modalContent to control scroll behavior */}
                 <ScrollView style={styles.modalScrollContainer}>
                   <Image
                     source={{ uri: selectedPost?.imageUrl }}
@@ -365,9 +350,8 @@ export default function Commu() {
                     <Text style={styles.postTitle}>{selectedPost?.title}</Text>
                     <Text style={styles.postText}>{selectedPost?.content}</Text>
 
-                    {/* Edit/Delete buttons */}
                     {isMenuVisible &&
-                      selectedPost?.nickname?.trim().toLowerCase() ===
+                      selectedPost?.user?.nickname?.trim().toLowerCase() ===
                         nickname?.trim().toLowerCase() && (
                         <View style={styles.iconContainer}>
                           <TouchableOpacity
@@ -471,6 +455,7 @@ export default function Commu() {
           </View>
         </TouchableWithoutFeedback>
       </Modal>
+
       {/* 게시글 수정 모달 */}
       <Modal animationType='slide' transparent visible={isEditModalVisible}>
         <TouchableWithoutFeedback onPress={() => setEditModalVisible(false)}>
@@ -526,13 +511,6 @@ export default function Commu() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  flatListContent: {
-    paddingBottom: 60,
-  },
   postContainer: {
     padding: 15,
     backgroundColor: '#F5F5F5',
@@ -559,28 +537,10 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginTop: 10,
   },
-  createButton: {
-    position: 'absolute',
-    bottom: WINDOW_HEIGHT * 0.12,
-    right: WINDOW_WIDTH * 0.05,
-    backgroundColor: '#0AE56A',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 15,
-    paddingVertical: 10,
-    borderRadius: 30,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.5,
-    shadowRadius: 3,
-    elevation: 5,
-  },
-  createButtonText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: 'bold',
-    marginLeft: 8,
+  scrollView: {
+    flexGrow: 1,
+    marginBottom: WINDOW_HEIGHT * 0.1,
+    paddingBottom: WINDOW_HEIGHT * 0.15,
   },
   modalContainer: {
     flex: 1,
@@ -719,16 +679,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
   },
-  scrollView: {
-    flexGrow: 1,
-    marginBottom: WINDOW_HEIGHT * 0.1,
-    paddingBottom: WINDOW_HEIGHT * 0.15,
-  },
-  footerContainer: {
-    position: 'absolute',
-    bottom: 0,
-    width: '100%',
-  },
   commentActions: {
     flexDirection: 'row',
     position: 'absolute',
@@ -740,15 +690,5 @@ const styles = StyleSheet.create({
     color: '#0AE56A',
     fontWeight: 'bold',
     fontSize: 14,
-  },
-  imagePreviewContainer: {
-    flexDirection: 'row',
-    marginTop: 10,
-  },
-  imagePreview: {
-    width: 60,
-    height: 60,
-    borderRadius: 5,
-    marginRight: 5,
   },
 });

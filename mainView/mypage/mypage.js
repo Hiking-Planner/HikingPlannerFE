@@ -92,42 +92,37 @@ export default function Mypage() {
 
           {isLoggedIn && (
             <>
-              {/* <View style={styles.section}>
-                <View style={styles.header}>
-                  <Text style={styles.headerText}>마이 컨텐츠</Text>
+              {
+                <View style={styles.section}>
+                  <View style={styles.header}>
+                    <Text style={styles.headerText}>마이 컨텐츠</Text>
+                  </View>
+                  <TouchableOpacity
+                    style={styles.menuItem}
+                    onPress={() =>
+                      navigation.navigate('MyContent', { activeTab: 'hiking' })
+                    }
+                  >
+                    <Image
+                      source={require('../../assets/icon/hiking_icon.png')}
+                      style={styles.icon}
+                    />
+                    <Text style={styles.menuText}>등산 기록</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.menuItem}
+                    onPress={() =>
+                      navigation.navigate('MyContent', { activeTab: 'posts' })
+                    }
+                  >
+                    <Image
+                      source={require('../../assets/icon/write_icon.png')}
+                      style={styles.icon}
+                    />
+                    <Text style={styles.menuText}>작성한 글</Text>
+                  </TouchableOpacity>
                 </View>
-                <TouchableOpacity
-                  style={styles.menuItem}
-                  onPress={() => navigation.navigate('MyContent')}
-                >
-                  <Image
-                    source={require('../../assets/icon/course_icon.png')}
-                    style={styles.icon}
-                  />
-                  <Text style={styles.menuText}>나의 코스</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.menuItem}>
-                  <Image
-                    source={require('../../assets/icon/hiking_icon.png')}
-                    style={styles.icon}
-                  />
-                  <Text style={styles.menuText}>등산 기록</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.menuItem}>
-                  <Image
-                    source={require('../../assets/icon/write_icon.png')}
-                    style={styles.icon}
-                  />
-                  <Text style={styles.menuText}>작성한 글</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.menuItem}>
-                  <Image
-                    source={require('../../assets/icon/comment_icon.png')}
-                    style={styles.icon}
-                  />
-                  <Text style={styles.menuText}>나의 댓글</Text>
-                </TouchableOpacity>
-              </View> */}
+              }
               <View style={styles.divider} />
               <View style={styles.section}>
                 <View style={styles.header}>

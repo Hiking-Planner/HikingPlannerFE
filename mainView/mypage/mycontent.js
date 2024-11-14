@@ -10,11 +10,15 @@ import {
 import IconButton from '../sub/IconButton';
 import colors from '../sub/colors';
 import { WINDOW_HEIGHT } from '../sub/dimensions';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import MyPost from './myPost';
 
 export default function MyContent() {
   const navigation = useNavigation();
-  const [activeTab, setActiveTab] = useState('hiking'); // 기본 탭은 '등산기록'
+  const route = useRoute();
+  const [activeTab, setActiveTab] = useState(
+    route.params?.activeTab || 'hiking'
+  ); // 기본 탭은 '등산기록'
 
   // 더미 데이터 생성
   const hikingRecords = [
@@ -27,21 +31,6 @@ export default function MyContent() {
       distance: '1.7km',
       dPlus: 'D+1',
       image: require('../../assets/mountain/achasan.png'), // 산 이미지 경로
-    },
-  ];
-  const writtenPosts = [
-    {
-      id: '1',
-      user: '사용자 2',
-      content: '주말 등산 끝! 너무 재밌었다~ 벚꽃도 너무 예쁨',
-    },
-  ];
-  const comments = [
-    {
-      id: '1',
-      user: '사용자 2',
-      comment: '정말 멋져요!!',
-      postTitle: '게시물',
     },
   ];
 
@@ -95,32 +84,7 @@ export default function MyContent() {
         />
       );
     } else if (activeTab === 'posts') {
-      return (
-        <FlatList
-          data={writtenPosts}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <View style={styles.postItem}>
-              <Text>{item.user}</Text>
-              <Text>{item.content}</Text>
-            </View>
-          )}
-        />
-      );
-    } else if (activeTab === 'comments') {
-      return (
-        <FlatList
-          data={comments}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <View style={styles.commentItem}>
-              <Text>{item.user}</Text>
-              <Text>{item.comment}</Text>
-              <Text>게시물: {item.postTitle}</Text>
-            </View>
-          )}
-        />
-      );
+      return <MyPost />;
     }
   };
 
@@ -139,18 +103,8 @@ export default function MyContent() {
           </View>
           <Text style={styles.headerTitle}>기록</Text>
           <View style={styles.btns}>
-            <IconButton
-              iconName='search'
-              onPress={() => {
-                navigation.navigate('SearchAdd');
-              }}
-            />
-            <IconButton
-              iconName='bookmark'
-              onPress={() => {
-                navigation.navigate('ScrapMore');
-              }}
-            />
+            <IconButton iconName='search' />
+            <IconButton iconName='bookmark' />
           </View>
         </View>
 
@@ -180,19 +134,6 @@ export default function MyContent() {
               ]}
             >
               작성한 글
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => setActiveTab('comments')}
-            style={styles.tab}
-          >
-            <Text
-              style={[
-                styles.tabText,
-                activeTab === 'comments' && styles.activeTab,
-              ]}
-            >
-              나의 댓글
             </Text>
           </TouchableOpacity>
         </View>

@@ -53,7 +53,7 @@ export default function MountainWeather({ mountainId, mountainName }) {
           const minTemp = item.main.temp_min;
           const maxTemp = item.main.temp_max;
           const feelsLike = item.main.feels_like;
-          const rainProbability = item.pop * 100;
+          const rainProbability = Math.round(item.pop * 100);
           const iconUrl = `http://openweathermap.org/img/wn/${item.weather[0].icon}@2x.png`;
 
           return {
@@ -74,7 +74,7 @@ export default function MountainWeather({ mountainId, mountainName }) {
         minTemp: currentItem.main.temp_min,
         maxTemp: currentItem.main.temp_max,
         feelsLike: currentItem.main.feels_like,
-        rainProbability: currentItem.pop * 100,
+        rainProbability: Math.round(currentItem.pop * 100),
         iconUrl: `http://openweathermap.org/img/wn/${currentItem.weather[0].icon}@2x.png`,
       });
     } catch (error) {
