@@ -342,7 +342,7 @@ export default function Commu() {
                   <Text style={styles.postText}>{selectedPost?.content}</Text>
 
                   {/* 수정/삭제 버튼 조건 추가 */}
-                  {isMenuVisible && selectedPost?.nickname === nickname && (
+                  {isMenuVisible && selectedPost?.nickname?.trim().toLowerCase() === nickname?.trim().toLowerCase() && (
                     <View style={styles.iconContainer}>
                       <TouchableOpacity
                         onPress={() => {
