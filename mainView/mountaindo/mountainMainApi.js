@@ -1,38 +1,32 @@
-// MountainMainApi.js
 import React, { useRef, useState, useCallback, useEffect } from 'react';
 import {
   View,
   StyleSheet,
   Text,
   ImageBackground,
-  Animated,
   TouchableOpacity,
+  ScrollView,
 } from 'react-native';
 import IconButton from '../sub/IconButton';
 import colors from '../sub/colors';
 import { WINDOW_HEIGHT } from '../sub/dimensions';
 import Route from '../scrapdo/route';
 import { useNavigation } from '@react-navigation/native';
-import MapView, { PROVIDER_GOOGLE, Marker } from 'react-native-maps';
+import MapView, { Marker } from 'react-native-maps';
 import { basicAxios, authAxios } from '../api/axios';
 import MountainWeather from './mountainWeather';
 
-const AnimatedImageBackground =
-  Animated.createAnimatedComponent(ImageBackground);
-
-export default function MountainMainApi({ route }) {
-  const { mountain } = route.params;
+const MountainMainApi = ({ route }) => {
+  const initialMountain = route.params.mountain;
+  const [mountain, setMountain] = useState(initialMountain);
   const [routes, setRoutes] = useState([]);
   const [refreshKey, setRefreshKey] = useState(0);
-  const scrollY = useRef(new Animated.Value(0)).current;
+  const scrollViewRef = useRef(null);
 
-  useEffect(() => {}, [mountain]);
-
-  const headerHeight = scrollY.interpolate({
-    inputRange: [0, WINDOW_HEIGHT * 0.15 * 4],
-    outputRange: [WINDOW_HEIGHT * 0.35, 0],
-    extrapolate: 'clamp',
-  });
+  useEffect(() => {
+    setMountain({ ...initialMountain });
+    scrollViewRef.current?.scrollTo({ y: 0, animated: false });
+  }, [refreshKey]);
 
   const navigation = useNavigation();
   const latitude = mountain.centerlatlon[0];
@@ -44,11 +38,9 @@ export default function MountainMainApi({ route }) {
 
   const handleRefresh = async () => {
     try {
-      console.log('mountainId:', mountain.mountain_id);
       const response = await authAxios.get(
         `/api/v1/auth/updatetrail?mountainid=${mountain.mountain_id}`
       );
-      console.log('API response:', response.data);
       setRefreshKey((prevKey) => prevKey + 1);
     } catch (error) {
       console.error(error);
@@ -57,8 +49,9 @@ export default function MountainMainApi({ route }) {
 
   return (
     <View style={styles.container}>
-      <AnimatedImageBackground
-        style={[styles.mountainImg, { height: headerHeight }]}
+      <ImageBackground
+        key={refreshKey}
+        style={[styles.mountainImg]}
         source={{
           uri: `${basicAxios.defaults.baseURL}${mountain.image_info[0].img_url}.jpg`,
         }}
@@ -76,16 +69,12 @@ export default function MountainMainApi({ route }) {
             </View>
           </View>
         </View>
-      </AnimatedImageBackground>
+      </ImageBackground>
       <View style={styles.mountainInfoView}>
-        <Animated.ScrollView
+        <ScrollView
+          ref={scrollViewRef}
           showsVerticalScrollIndicator={false}
           style={styles.mountainScroll}
-          onScroll={Animated.event(
-            [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-            { useNativeDriver: false }
-          )}
-          scrollEventThrottle={16}
         >
           <View style={styles.info}>
             <View style={styles.nameAndLocation}>
@@ -96,7 +85,6 @@ export default function MountainMainApi({ route }) {
             </View>
             <Text style={styles.comment}>{mountain.mountain_comment}</Text>
           </View>
-          {/* 산 이름을 함께 전달하여 "OOO 날씨"로 표시 */}
           <MountainWeather
             mountainId={mountain.mountain_id}
             mountainName={mountain.mountain_name}
@@ -119,7 +107,7 @@ export default function MountainMainApi({ route }) {
                   console.warn(
                     `Invalid startPoint for route ${route.trail_name}`
                   );
-                  return null; // startPoint가 null이거나 유효하지 않으면 렌더링하지 않음
+                  return null;
                 }
                 return (
                   <Marker
@@ -134,6 +122,7 @@ export default function MountainMainApi({ route }) {
                         name: route.trail_name,
                         endPoint: endPoint,
                         mountainId: mountain.mountain_id,
+                        mountain,
                       })
                     }
                   >
@@ -151,8 +140,9 @@ export default function MountainMainApi({ route }) {
               style={styles.startHikingButton}
               onPress={() =>
                 navigation.navigate('HikingMapView', {
-                  coordinates: [], // 기본 좌표
-                  mountainId: mountain.mountain_id, // 산 ID
+                  coordinates: [],
+                  mountainId: mountain.mountain_id,
+                  mountain,
                 })
               }
             >
@@ -161,35 +151,33 @@ export default function MountainMainApi({ route }) {
             <View style={styles.roadView}>
               <View style={styles.roadHeader}>
                 <Text style={styles.roadText}>총 {routes.length} 개 코스</Text>
-                <TouchableOpacity style={styles.refreshBtn}>
-                  <IconButton
-                    iconName='rotate-cw'
-                    size={15}
-                    onPress={() => {
-                      handleRefresh();
-                    }}
-                  />
+                <TouchableOpacity
+                  style={styles.refreshBtn}
+                  onPress={handleRefresh}
+                >
+                  <IconButton iconName='rotate-cw' size={15} />
                 </TouchableOpacity>
               </View>
               <Route
                 key={refreshKey}
                 mountainId={mountain.mountain_id}
                 onRoutesFetched={handleRoutesFetched}
+                mountain={mountain}
               />
             </View>
           </View>
-        </Animated.ScrollView>
+        </ScrollView>
       </View>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
   mountainImg: {
-    height: WINDOW_HEIGHT * 0.35,
+    height: WINDOW_HEIGHT * 0.28,
   },
   header: {
     height: WINDOW_HEIGHT * 0.09,
@@ -300,3 +288,5 @@ const styles = StyleSheet.create({
     color: colors.white,
   },
 });
+
+export default MountainMainApi;

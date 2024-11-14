@@ -7,7 +7,6 @@ import {
   Modal,
   Image,
   Text,
-  Alert,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import IconButton from '../sub/IconButton';
@@ -15,7 +14,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import MapView, { PROVIDER_GOOGLE, Polyline, Marker } from 'react-native-maps';
 import { WINDOW_HEIGHT } from '../sub/dimensions';
 import * as Location from 'expo-location';
-import { basicAxios, authAxios } from '../api/axios';
+import { authAxios } from '../api/axios';
 import RoadWarningButton from './RoadWarningButton';
 import StartStopButton from './StartStopButton';
 import colors from '../sub/colors';
@@ -39,6 +38,7 @@ export const HikingMapView = () => {
   const coordinates = routeParams?.coordinates || [];
   const mountainId = routeParams?.mountainId;
   const endPoint = routeParams?.endPoint;
+  const mountain = routeParams?.mountain;
 
   const mapRef = useRef(null);
 
@@ -208,13 +208,16 @@ export const HikingMapView = () => {
     // 3초 후에 모달을 닫고 이전 화면으로 이동
     const timeoutId = setTimeout(() => {
       setIsModalVisible(false);
-      navigation.navigate('MountainMainApi');
+      navigation.navigate('MountainMainApi', {
+        mountain,
+      });
     }, 3000);
 
     return () => clearTimeout(timeoutId); // 컴포넌트가 언마운트 될 때 타이머 정리
   };
 
   const handleCancel = () => {
+    setIsFinished(false);
     setIsModalVisible(false); // 모달을 닫아 상태 초기화
   };
 
