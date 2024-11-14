@@ -159,7 +159,7 @@ export default function Commu() {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
-      }); // -> 백엔드 만들고 수정해야 함
+      });
 
       Alert.alert('성공', '게시글이 수정되었습니다!');
       setEditModalVisible(false);
@@ -279,6 +279,16 @@ export default function Commu() {
                 >
                   <Text style={styles.selectImageButtonText}>이미지 선택</Text>
                 </TouchableOpacity>
+                {/* 이미지 미리보기 영역 */}
+                <View style={styles.imagePreviewContainer}>
+                  {images.map((image, index) => (
+                    <Image
+                      key={index}
+                      source={{ uri: image.uri }}
+                      style={styles.imagePreview}
+                    />
+                  ))}
+                </View>
                 <View style={styles.buttonRow}>
                   <TouchableOpacity
                     style={styles.cancelButton}
@@ -298,6 +308,7 @@ export default function Commu() {
           </View>
         </TouchableWithoutFeedback>
       </Modal>
+
 
       {/* 게시글 상세 모달 */}
       <Modal animationType='slide' transparent visible={isPostModalVisible}>
@@ -657,5 +668,15 @@ const styles = StyleSheet.create({
     color: '#0AE56A',
     fontWeight: 'bold',
     fontSize: 14,
+  },
+  imagePreviewContainer: {
+    flexDirection: 'row',
+    marginTop: 10,
+  },
+  imagePreview: {
+    width: 60,
+    height: 60,
+    borderRadius: 5,
+    marginRight: 5,
   },
 });

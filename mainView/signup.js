@@ -1,9 +1,11 @@
 import React, { useState, useRef } from 'react';
-import { View, StyleSheet, Alert, Text } from 'react-native';
+import { View, StyleSheet, Alert, Text, TouchableOpacity, Image } from 'react-native';
 import { TextInput, Button } from 'react-native-paper';
 import colors from './sub/colors';
 import { useNavigation } from '@react-navigation/native';
 import { basicAxios } from './api/axios';
+import openEyeIcon from '../assets/icon/open_eye.png';
+import closeEyeIcon from '../assets/icon/close_eye.png';
 
 const SignUp = () => {
   const [id, setId] = useState('');
@@ -16,6 +18,8 @@ const SignUp = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isEmailVerified, setIsEmailVerified] = useState(false);
   const [isCertificationSent, setIsCertificationSent] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigation = useNavigation();
   const phoneInputRef = useRef(null);
 
@@ -147,42 +151,48 @@ const SignUp = () => {
         </>
       )}
       <Text style={styles.label}>비밀번호</Text>
-      <TextInput
-        style={styles.input}
-        mode="outlined"
-        value={password}
-        onChangeText={setPassword}
-        placeholder="비밀번호를 입력하세요"
-        secureTextEntry
-        returnKeyType="next"
-      />
-      {!isPasswordValid && (
-        <Text style={styles.errorMessage}>
-          비밀번호는 최소 8자에서 13자이며, 대소문자와 숫자가 포함되어야 합니다.
-        </Text>
-      )}
-      <Text style={styles.label}>비밀번호 확인</Text>
-      <TextInput
-        style={styles.input}
-        mode="outlined"
-        value={confirmPassword}
-        onChangeText={setConfirmPassword}
-        placeholder="비밀번호를 다시 입력하세요"
-        secureTextEntry
-        returnKeyType="next"
-      />
-      {confirmPassword.length > 0 && (
-        <Text
-          style={[
-            styles.passwordMatchText,
-            { color: isPasswordMatch ? 'green' : 'red' },
-          ]}
-        >
-          {isPasswordMatch
-            ? '비밀번호가 일치합니다.'
-            : '비밀번호가 일치하지 않습니다.'}
-        </Text>
-      )}
+        <TextInput
+          style={styles.input}
+          mode="outlined"
+          value={password}
+          onChangeText={setPassword}
+          placeholder="비밀번호를 입력하세요"
+          secureTextEntry={!showPassword}
+          returnKeyType="next"
+          right={
+            <TextInput.Icon
+              icon={() => <Image source={showPassword ? openEyeIcon : closeEyeIcon} style={{ width: 24, height: 24 }} />}
+              onPress={() => setShowPassword(!showPassword)}
+            />
+          }
+        />
+        {!isPasswordValid && (
+          <Text style={styles.errorMessage}>
+            비밀번호는 최소 8자에서 13자이며, 대소문자와 숫자가 포함되어야 합니다.
+          </Text>
+        )}
+
+        <Text style={styles.label}>비밀번호 확인</Text>
+        <TextInput
+          style={styles.input}
+          mode="outlined"
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
+          placeholder="비밀번호를 다시 입력하세요"
+          secureTextEntry={!showConfirmPassword}
+          returnKeyType="next"
+          right={
+            <TextInput.Icon
+              icon={() => <Image source={showConfirmPassword ? openEyeIcon : closeEyeIcon} style={{ width: 24, height: 24 }} />}
+              onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+            />
+          }
+        />
+        {confirmPassword.length > 0 && (
+          <Text style={[styles.passwordMatchText, { color: isPasswordMatch ? 'green' : 'red' }]}>
+            {isPasswordMatch ? '비밀번호가 일치합니다.' : '비밀번호가 일치하지 않습니다.'}
+          </Text>
+        )}
       <Text style={styles.label}>닉네임</Text>
       <TextInput
         style={styles.input}
@@ -254,6 +264,18 @@ const styles = StyleSheet.create({
     height: 40,
     justifyContent: 'center',
     backgroundColor: colors.mintGreen,
+  },
+  passwordContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  eyeIcon: {
+    position: 'absolute',
+    right: 10,
+  },
+  eyeImage: {
+    width: 24,
+    height: 24,
   },
   passwordMatchText: {
     marginBottom: 16,
