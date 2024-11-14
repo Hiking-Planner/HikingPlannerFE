@@ -8,6 +8,7 @@ import { WINDOW_WIDTH, WINDOW_HEIGHT } from './sub/dimensions';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import * as ImagePicker from 'expo-image-picker';
 import { basicAxios, authAxios } from './api/axios';
+import userInfoStore from './stores/userInfoStore';
 
 export default function Commu() {
   const navigation = useNavigation();
@@ -26,12 +27,18 @@ export default function Commu() {
   const [editingCommentId, setEditingCommentId] = useState(null); // 수정 중인 댓글 ID
   const [editedComment, setEditedComment] = useState(''); // 수정할 댓글 내용
 
-
+  // 로그인된 사용자 닉네임 가져오기
+  const userNickname = userInfoStore((state) => state.nickname);
+  
   // 게시물 불러오기
   const fetchPosts = async () => {
     try {
       const response = await basicAxios.get('/api/v1/auth/boards');
-      setPosts(response.data || []);
+      const postsWithUserNickname = response.data.map(post => ({
+        ...post,
+        userNickname: post.userNickname, // 각 게시물에 userNickname 속성을 포함
+      }));
+      setPosts(postsWithUserNickname);
     } catch (error) {
       console.error('게시물 불러오기 실패:', error.message);
       Alert.alert('오류', '게시물을 불러오는 데 실패했습니다.');
@@ -45,10 +52,12 @@ export default function Commu() {
   // 댓글 불러오기
   const fetchComments = async (boardId) => {
     try {
-      const response = await basicAxios.get(
-        `/api/v1/auth/comments?boardId=${boardId}`
-      );
-      setComments(response.data || []);
+      const response = await basicAxios.get(`/api/v1/auth/comments?boardId=${boardId}`);
+      const commentsWithUserNickname = response.data.map(comment => ({
+        ...comment,
+        userNickname: comment.nickname, // 각 댓글에 userNickname 속성을 포함
+      }));
+      setComments(commentsWithUserNickname);
     } catch (error) {
       console.error('댓글 불러오기 실패:', error.message);
     }
@@ -179,6 +188,7 @@ export default function Commu() {
     setTitle(post.title);
     setContent(post.content);
     setEditModalVisible(true);
+    console.log("Selected Post User ID:", post.userNickname);
   };
 
   // 게시물 삭제
@@ -331,12 +341,14 @@ export default function Commu() {
                 <View style={styles.modalTextContainer}>
                   <Text style={styles.postTitle}>{selectedPost?.title}</Text>
                   <Text style={styles.postText}>{selectedPost?.content}</Text>
-                  {isMenuVisible && (
+
+                  {/* 수정/삭제 버튼 조건 추가 */}
+                  {isMenuVisible && selectedPost?.userNickname === userNickname && (
                     <View style={styles.iconContainer}>
                       <TouchableOpacity
                         onPress={() => {
-                        setPostModalVisible(false);
-                        openEditModal(selectedPost);
+                          setPostModalVisible(false);
+                          openEditModal(selectedPost);
                         }}
                       >
                         <Icon name='pencil' size={24} color='#000' />
@@ -352,7 +364,10 @@ export default function Commu() {
                   <ScrollView style={styles.commentList} contentContainerStyle={{ flexGrow: 1 }}>
                     {comments.map((comment) => (
                       <View key={comment.commentId} style={styles.commentContainer}>
-                        <Text style={styles.commentUserName}>{comment.nickname}</Text>
+                        {/* 사용자 이름은 항상 표시 */}
+                        <Text style={styles.commentUserName}>{comment.userNickname}</Text>
+
+                        {/* 댓글 내용 */}
                         {editingCommentId === comment.commentId ? (
                           <>
                             <TextInput
@@ -361,7 +376,7 @@ export default function Commu() {
                               onChangeText={setEditedComment}
                             />
                             <TouchableOpacity
-                              onPress={() => submitEditComment(comment.commentId)} // 수정 완료 버튼
+                              onPress={() => submitEditComment(comment.commentId)}
                               style={styles.commentButton}
                             >
                               <Text style={styles.commentButtonText}>수정 완료</Text>
@@ -370,17 +385,21 @@ export default function Commu() {
                         ) : (
                           <Text style={styles.commentText}>{comment.content}</Text>
                         )}
-                        <View style={styles.commentActions}>
-                          <TouchableOpacity onPress={() => {
-                            setEditingCommentId(comment.commentId);
-                            setEditedComment(comment.content);
-                          }}>
-                            <Text style={styles.editDeleteText}>수정</Text>
-                          </TouchableOpacity>
-                          <TouchableOpacity onPress={() => deleteComment(comment.commentId)}>
-                            <Text style={styles.editDeleteText}>삭제</Text>
-                          </TouchableOpacity>
-                        </View>
+
+                        {/* 수정/삭제 버튼은 닉네임이 일치할 때만 표시 */}
+                        {comment.userNickname === userNickname && (
+                          <View style={styles.commentActions}>
+                            <TouchableOpacity onPress={() => {
+                              setEditingCommentId(comment.commentId);
+                              setEditedComment(comment.content);
+                            }}>
+                              <Text style={styles.editDeleteText}>수정</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={() => deleteComment(comment.commentId)}>
+                              <Text style={styles.editDeleteText}>삭제</Text>
+                            </TouchableOpacity>
+                          </View>
+                        )}
                       </View>
                     ))}
                   </ScrollView>
