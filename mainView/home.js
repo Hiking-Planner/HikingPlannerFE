@@ -29,7 +29,6 @@ export default function Home() {
     <View style={styles.container}>
       <View style={styles.wrapper}>
         <Header />
-        <Search />
         <ScrollView
           showsVerticalScrollIndicator={false}
           style={styles.homeScroll}

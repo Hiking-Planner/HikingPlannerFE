@@ -16,7 +16,7 @@ import { useNavigation } from '@react-navigation/native';
 import { basicAxios } from '../api/axios';
 
 export default function RouteMore({ route }) {
-  const { trail_id, name, endPoint } = route.params;
+  const { trail_id, name, endPoint, mountain } = route.params;
   const [coordinates, setCoordinates] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigation = useNavigation();
@@ -148,6 +148,7 @@ export default function RouteMore({ route }) {
                 coordinates: convertedCoordinates,
                 mountainId: route.params.mountainId,
                 endPoint: endPoint,
+                mountain,
               })
             }
           >

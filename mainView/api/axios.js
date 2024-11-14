@@ -11,7 +11,8 @@ export const basicAxios = axios.create({
   timeout: 10000, // 10초 타임아웃 설정
 });
 
-{/*
+{
+  /*
 // 비동기로 access token 가져오기 함수
 const getAccessToken = async () => {
   try {
@@ -24,7 +25,8 @@ const getAccessToken = async () => {
   }
 };
 --> 현재 사용하지 않아서 주석 처리
-*/}
+*/
+}
 
 // 인증이 필요한 axios 인스턴스 생성
 export const authAxios = axios.create({
@@ -40,10 +42,8 @@ authAxios.interceptors.request.use(
   async (config) => {
     try {
       const token = await AsyncStorage.getItem('accessToken'); // 직접 호출
-      console.log("axios token : ", token);
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
-        console.log("보내는 토큰 : ", token);
       } else {
         console.warn('토큰이 없습니다. 인증이 필요한 요청입니다.');
       }
@@ -54,7 +54,6 @@ authAxios.interceptors.request.use(
   },
   (error) => Promise.reject(error)
 );
-
 
 // 응답 인터셉터: 에러 처리
 authAxios.interceptors.response.use(

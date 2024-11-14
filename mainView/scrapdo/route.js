@@ -45,6 +45,7 @@ const RouteCard = ({
   time,
   distance,
   endPoint,
+  mountain,
 }) => {
   const formattedTime = formatTime(time);
   const navigation = useNavigation();
@@ -83,6 +84,7 @@ const RouteCard = ({
               trail_id,
               name,
               endPoint,
+              mountain,
             })
           }
         />
@@ -91,7 +93,7 @@ const RouteCard = ({
   );
 };
 
-const Route = ({ mountainId, onRoutesFetched }) => {
+const Route = ({ mountainId, onRoutesFetched, mountain }) => {
   const [routes, setRoutes] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -146,7 +148,8 @@ const Route = ({ mountainId, onRoutesFetched }) => {
           difficulty={item.difficulty}
           time={item.up_time + item.down_time}
           distance={item.total_length}
-          endPoint={JSON.parse(item.end_point)} // end_point를 RouteCard로 전달
+          endPoint={JSON.parse(item.end_point)}
+          mountain={mountain}
         />
       ))}
     </View>
