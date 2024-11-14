@@ -72,25 +72,25 @@ const Login = () => {
       />
 
       {/* 비밀번호 입력 필드 */}
-      <TextInput
-        ref={passwordInputRef}
-        style={styles.input}
-        mode="outlined"
-        value={password}
-        onChangeText={setPassword}
-        placeholder="비밀번호"
-        secureTextEntry={!showPassword}
-        returnKeyType="done"
-        onSubmitEditing={() => {
-          Keyboard.dismiss();
-          signIn();
-        }}
-        right={
-          <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-            <Image source={showPassword ? openEyeIcon : closeEyeIcon} style={{ width: 24, height: 24 }} />
-          </TouchableOpacity>
-        }
-      />
+      <View style={styles.passwordContainer}>
+        <TextInput
+          ref={passwordInputRef}
+          style={styles.passwordInput}
+          mode="outlined"
+          value={password}
+          onChangeText={setPassword}
+          placeholder="비밀번호"
+          secureTextEntry={!showPassword}
+          returnKeyType="done"
+          onSubmitEditing={() => {
+            Keyboard.dismiss();
+            signIn();
+          }}
+        />
+        <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeIcon}>
+          <Image source={showPassword ? openEyeIcon : closeEyeIcon} style={styles.iconImage} />
+        </TouchableOpacity>
+      </View>
 
       {/* 로그인 버튼 */}
       <Button mode="contained" onPress={signIn} style={styles.loginButton}>
@@ -133,6 +133,25 @@ const styles = StyleSheet.create({
     width: '80%',
     height: 45,
     backgroundColor: '#FFFFFF',
+  },
+  passwordContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '80%',
+    marginBottom: 16,
+  },
+  passwordInput: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+  },
+  eyeIcon: {
+    position: 'absolute',
+    right: 10,
+    padding: 5,
+  },
+  iconImage: {
+    width: 24,
+    height: 24,
   },
   loginButton: {
     width: '80%',
