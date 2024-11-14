@@ -28,17 +28,21 @@ export default function Commu() {
   const [editedComment, setEditedComment] = useState(''); // 수정할 댓글 내용
 
   // 로그인된 사용자 닉네임 가져오기
-  const userNickname = userInfoStore((state) => state.nickname);
+  const { nickname } = userInfoStore((state) => state.userInfo);
   
+  useEffect(() => {
+    if (!nickname) {
+      console.log("유저 정보가 아직 로드되지 않았습니다.");
+    } else {
+      console.log("현재 유저 닉네임:", nickname);
+    }
+  }, [nickname]);
+
   // 게시물 불러오기
   const fetchPosts = async () => {
     try {
       const response = await basicAxios.get('/api/v1/auth/boards');
-      const postsWithUserNickname = response.data.map(post => ({
-        ...post,
-        userNickname: post.nickname,
-      }));
-      setPosts(postsWithUserNickname);
+      setPosts(response.data);
     } catch (error) {
       console.error('게시물 불러오기 실패:', error.message);
       Alert.alert('오류', '게시물을 불러오는 데 실패했습니다.');
@@ -53,13 +57,10 @@ export default function Commu() {
   const fetchComments = async (boardId) => {
     try {
       const response = await basicAxios.get(`/api/v1/auth/comments?boardId=${boardId}`);
-      const commentsWithUserNickname = response.data.map(comment => ({
-        ...comment,
-        userNickname: comment.nickname,
-      }));
-      setComments(commentsWithUserNickname);
+      setComments(response.data); // 서버 응답을 그대로 상태로 설정
     } catch (error) {
       console.error('댓글 불러오기 실패:', error.message);
+      Alert.alert('오류', '댓글을 불러오는 데 실패했습니다.');
     }
   };
 
@@ -188,7 +189,6 @@ export default function Commu() {
     setTitle(post.title);
     setContent(post.content);
     setEditModalVisible(true);
-    console.log("Selected Post User ID:", post.userNickname);
   };
 
   // 게시물 삭제
@@ -210,6 +210,7 @@ export default function Commu() {
     setPostModalVisible(true);
     fetchComments(post.boardId);
     setIsMenuVisible(false);
+    console.log("Selected Post User ID:", post.nickname);
   };
 
   const toggleMenu = () => {
@@ -319,7 +320,6 @@ export default function Commu() {
         </TouchableWithoutFeedback>
       </Modal>
 
-
       {/* 게시글 상세 모달 */}
       <Modal animationType='slide' transparent visible={isPostModalVisible}>
         <TouchableWithoutFeedback onPress={() => setPostModalVisible(false)}>
@@ -343,7 +343,7 @@ export default function Commu() {
                   <Text style={styles.postText}>{selectedPost?.content}</Text>
 
                   {/* 수정/삭제 버튼 조건 추가 */}
-                  {isMenuVisible && selectedPost?.userNickname === userNickname && (
+                  {isMenuVisible && selectedPost?.nickname === nickname && (
                     <View style={styles.iconContainer}>
                       <TouchableOpacity
                         onPress={() => {
@@ -360,13 +360,10 @@ export default function Commu() {
                       </TouchableOpacity>
                     </View>
                   )}
-                  {/* 댓글 목록 */}
                   <ScrollView style={styles.commentList} contentContainerStyle={{ flexGrow: 1 }}>
                     {comments.map((comment) => (
                       <View key={comment.commentId} style={styles.commentContainer}>
-                        {/* 사용자 이름은 항상 표시 */}
-                        <Text style={styles.commentUserName}>{comment.userNickname}</Text>
-
+                        <Text style={styles.commentUserName}>{comment.nickname}</Text>
                         {/* 댓글 내용 */}
                         {editingCommentId === comment.commentId ? (
                           <>
@@ -386,13 +383,15 @@ export default function Commu() {
                           <Text style={styles.commentText}>{comment.content}</Text>
                         )}
 
-                        {/* 수정/삭제 버튼은 닉네임이 일치할 때만 표시 */}
-                        {comment.userNickname === userNickname && (
+                        {/* 수정/삭제 버튼을 표시할 조건과 콘솔 로그 추가 */}
+                        {comment.nickname?.trim() === nickname?.trim() && (
                           <View style={styles.commentActions}>
-                            <TouchableOpacity onPress={() => {
-                              setEditingCommentId(comment.commentId);
-                              setEditedComment(comment.content);
-                            }}>
+                            <TouchableOpacity
+                              onPress={() => {
+                                setEditingCommentId(comment.commentId);
+                                setEditedComment(comment.content);
+                              }}
+                            >
                               <Text style={styles.editDeleteText}>수정</Text>
                             </TouchableOpacity>
                             <TouchableOpacity onPress={() => deleteComment(comment.commentId)}>
