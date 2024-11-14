@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
   },
   sosButtonText: {
     color: colors.white,
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
     textAlign: 'center',
   },

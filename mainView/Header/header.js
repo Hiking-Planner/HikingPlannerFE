@@ -12,10 +12,7 @@ export default function Header() {
       <Image source={require('../../assets/logo.png')} style={styles.logo} />
       <Text style={styles.textLogo}>Hiking Planner</Text>
       <View style={styles.btns}>
-        <IconButton
-          iconName='bookmark'
-          onPress={() => navigation.navigate('ScrapMore')}
-        />
+        <IconButton iconName='bookmark' />
         <IconButton iconName='bell' />
       </View>
     </View>
