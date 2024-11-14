@@ -36,7 +36,7 @@ export default function Commu() {
       const response = await basicAxios.get('/api/v1/auth/boards');
       const postsWithUserNickname = response.data.map(post => ({
         ...post,
-        userNickname: post.userNickname, // 각 게시물에 userNickname 속성을 포함
+        userNickname: post.nickname,
       }));
       setPosts(postsWithUserNickname);
     } catch (error) {
@@ -55,7 +55,7 @@ export default function Commu() {
       const response = await basicAxios.get(`/api/v1/auth/comments?boardId=${boardId}`);
       const commentsWithUserNickname = response.data.map(comment => ({
         ...comment,
-        userNickname: comment.nickname, // 각 댓글에 userNickname 속성을 포함
+        userNickname: comment.nickname,
       }));
       setComments(commentsWithUserNickname);
     } catch (error) {
