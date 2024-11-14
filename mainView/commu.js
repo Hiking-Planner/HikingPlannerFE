@@ -102,7 +102,6 @@ export default function Commu() {
       Alert.alert('오류', '댓글 삭제에 실패했습니다.');
     }
   };
-  
 
   const selectImages = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -127,7 +126,7 @@ export default function Commu() {
       images.forEach((image, index) => {
         formData.append('image', {
           uri: image.uri,
-          type: image.type || 'image/jpeg',
+          type: 'image/jpeg',
           name: `image${index}.jpg`,
         });
       });
@@ -669,6 +668,7 @@ const styles = StyleSheet.create({
   scrollView: {
     flexGrow: 1,
     marginBottom: WINDOW_HEIGHT * 0.1,
+    paddingBottom: WINDOW_HEIGHT * 0.15,
   },
   footerContainer: {
     position: 'absolute',
