@@ -5,6 +5,7 @@ import {
   Text,
   TouchableOpacity,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import IconButton from '../sub/IconButton';
 import MapView, { Polyline, Marker } from 'react-native-maps';
@@ -121,7 +122,7 @@ export default function RouteMore({ route }) {
               <Polyline
                 coordinates={convertedCoordinates}
                 strokeColor='#FF0000'
-                strokeWidth={6}
+                strokeWidth={4}
               />
               {endPoint && (
                 <Marker
@@ -130,7 +131,13 @@ export default function RouteMore({ route }) {
                     longitude: endPoint[1],
                   }}
                   title='도착'
-                />
+                >
+                  <Image
+                    source={require('../../assets/icon/flag.png')}
+                    style={{ width: 30, height: 30 }} // 여기서 마커 크기 조정 가능
+                    resizeMode='contain' // 이미지가 잘리지 않도록 조정
+                  />
+                </Marker>
               )}
             </MapView>
           </View>
@@ -140,6 +147,7 @@ export default function RouteMore({ route }) {
               navigation.navigate('HikingMapView', {
                 coordinates: convertedCoordinates,
                 mountainId: route.params.mountainId,
+                endPoint: endPoint,
               })
             }
           >
