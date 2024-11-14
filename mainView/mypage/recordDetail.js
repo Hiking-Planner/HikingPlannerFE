@@ -1,19 +1,18 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef } from 'react';
 import {
   View,
   StyleSheet,
   Text,
   Animated,
   TouchableOpacity,
-  ScrollView,
-  TextInput,
   Image,
   ImageBackground,
 } from 'react-native';
+import MapView, { Polyline } from 'react-native-maps';
 import IconButton from '../sub/IconButton';
 import colors from '../sub/colors';
-import { WINDOW_HEIGHT, WINDOW_WIDTH } from '../sub/dimensions';
-import { useNavigation } from '@react-navigation/native';
+import { WINDOW_HEIGHT } from '../sub/dimensions';
+import { useNavigation, useRoute } from '@react-navigation/native';
 
 const AnimatedImageBackground =
   Animated.createAnimatedComponent(ImageBackground);
@@ -21,23 +20,21 @@ const AnimatedImageBackground =
 export default function RecordDetail() {
   const scrollY = useRef(new Animated.Value(0)).current;
   const navigation = useNavigation();
+  const route = useRoute();
 
-  const [memo, setMemo] = useState(''); // 현재 입력 중인 메모 상태
-  const [savedMemo, setSavedMemo] = useState(''); // 저장된 메모 상태
-  const [isEditing, setIsEditing] = useState(false); // 메모 수정 모드 상태
+  const { image, title, height, location, date, time } = route.params;
 
-  const hikingRecords = [
-    {
-      id: '1',
-      title: '아차산',
-      height: '287m',
-      date: '24년 04월 04일',
-      time: '12:00 ~ 14:00',
-      distance: '1.7km',
-      dPlus: 'D+1',
-      image: require('../../assets/mountain/achasan.png'),
-    },
-  ];
+  let { hikingTrailData } = route.params;
+
+  // JSON 문자열로 전달된 경우 파싱
+  if (typeof hikingTrailData === 'string') {
+    try {
+      hikingTrailData = JSON.parse(hikingTrailData);
+    } catch (error) {
+      console.error('Failed to parse hikingTrailData:', error);
+      hikingTrailData = []; // 오류 시 빈 배열로 설정
+    }
+  }
 
   const headerHeight = scrollY.interpolate({
     inputRange: [0, WINDOW_HEIGHT * 0.15 * 4],
@@ -45,33 +42,13 @@ export default function RecordDetail() {
     extrapolate: 'clamp',
   });
 
-  // 메모 등록 핸들러
-  const handleRegisterMemo = () => {
-    if (memo.trim() !== '') {
-      setSavedMemo(memo);
-      setMemo('');
-      setIsEditing(false);
-    }
-  };
-
-  // 메모 수정 모드로 전환
-  const handleEditMemo = () => {
-    setMemo(savedMemo);
-    setIsEditing(true);
-  };
-
-  // 메모 삭제 핸들러
-  const handleDeleteMemo = () => {
-    setSavedMemo('');
-    setMemo('');
-    setIsEditing(false);
-  };
-
   return (
     <View style={styles.container}>
       <AnimatedImageBackground
         style={[styles.mountainImg, { height: headerHeight }]}
-        source={hikingRecords[0].image}
+        source={
+          image ? { uri: image } : require('../../assets/mountain/achasan.png')
+        }
       >
         <View style={styles.wrapper}>
           <View style={styles.header}>
@@ -86,15 +63,20 @@ export default function RecordDetail() {
       </AnimatedImageBackground>
 
       <View style={styles.mountainInfoView}>
-        <ScrollView
+        <Animated.ScrollView
           showsVerticalScrollIndicator={false}
           style={styles.mountainScroll}
+          onScroll={Animated.event(
+            [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+            { useNativeDriver: false }
+          )}
+          scrollEventThrottle={16}
         >
           <View style={styles.recordInfo}>
             <Text style={styles.mountainTitle}>
-              {hikingRecords[0].title}{' '}
+              {title}{' '}
               <Text style={styles.mountainHeight}>
-                {hikingRecords[0].height} - 서울
+                {height}m - {location}
               </Text>
             </Text>
             <View style={styles.hikingDetails}>
@@ -104,63 +86,38 @@ export default function RecordDetail() {
                   style={styles.timeImg}
                 />
                 <Text style={styles.hikingDateTime}>
-                  {hikingRecords[0].date} {hikingRecords[0].time}
-                </Text>
-              </View>
-              <View style={styles.hikingDistanceView}>
-                <Image
-                  source={require('../../assets/icon/distance.png')}
-                  style={styles.distanceImg}
-                />
-                <Text style={styles.hikingDistance}>
-                  {hikingRecords[0].distance}
+                  {date} {time}
                 </Text>
               </View>
             </View>
           </View>
 
-          {/* 상세 경로 (지도 대체) */}
+          {/* 지도에 경로 표시 */}
           <Text style={styles.sectionTitle}>상세 경로</Text>
-          <View style={styles.mapPlaceholder}>
-            <Text style={styles.mapPlaceholderText}>
-              지도 화면 (추후 추가 예정)
-            </Text>
-          </View>
-
-          {/* 메모 섹션 */}
-          <Text style={styles.sectionTitle}>메모</Text>
-
-          {savedMemo ? (
-            <View style={styles.memoContainer}>
-              <Text style={styles.memoText}>{savedMemo}</Text>
-              <View style={styles.memoActions}>
-                <TouchableOpacity onPress={handleEditMemo}>
-                  <Text style={styles.editText}>수정</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={handleDeleteMemo}>
-                  <Text style={styles.deleteText}>삭제</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
+          {Array.isArray(hikingTrailData) && hikingTrailData.length >= 2 ? (
+            <MapView
+              style={styles.map}
+              initialRegion={{
+                latitude: hikingTrailData[0].latitude,
+                longitude: hikingTrailData[0].longitude,
+                latitudeDelta: 0.01,
+                longitudeDelta: 0.01,
+              }}
+            >
+              <Polyline
+                coordinates={hikingTrailData}
+                strokeColor='#f01111'
+                strokeWidth={8}
+              />
+            </MapView>
           ) : (
-            <Text style={styles.noMemoText}>등록된 메모가 없습니다.</Text>
+            <View style={styles.mapPlaceholder}>
+              <Text style={styles.mapPlaceholderText}>
+                경로 데이터가 없습니다.
+              </Text>
+            </View>
           )}
-        </ScrollView>
-
-        {/* 메모 입력 및 등록 (화면 하단 고정) */}
-        <View style={styles.memoInputContainer}>
-          <TextInput
-            style={styles.memoInput}
-            placeholder='메모를 남겨보세요.'
-            value={memo}
-            onChangeText={setMemo}
-          />
-          <TouchableOpacity onPress={handleRegisterMemo}>
-            <Text style={styles.registerText}>
-              {isEditing ? '수정 완료' : '등록'}
-            </Text>
-          </TouchableOpacity>
-        </View>
+        </Animated.ScrollView>
       </View>
     </View>
   );
@@ -195,7 +152,7 @@ const styles = StyleSheet.create({
   },
   mountainScroll: {
     paddingHorizontal: 20,
-    marginBottom: 60, // 메모 입력란 공간 확보
+    marginBottom: 60,
   },
   recordInfo: {
     marginTop: 20,
@@ -223,25 +180,10 @@ const styles = StyleSheet.create({
     marginRight: 5,
     tintColor: '#aaa',
   },
-  hikingDistanceView: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
   hikingDateTime: {
     fontSize: 12,
     color: '#aaa',
     marginLeft: 5,
-  },
-  hikingDistance: {
-    fontSize: 12,
-    color: '#aaa',
-    marginLeft: 5,
-  },
-  distanceImg: {
-    width: 18,
-    height: 18,
-    marginRight: 5,
-    tintColor: '#aaa',
   },
   sectionTitle: {
     fontSize: 18,
@@ -249,9 +191,13 @@ const styles = StyleSheet.create({
     marginTop: 20,
     marginBottom: 10,
   },
+  map: {
+    height: WINDOW_HEIGHT * 0.4,
+    borderRadius: 10,
+  },
   mapPlaceholder: {
-    height: 200,
-    backgroundColor: '#87CEEB', // 하늘색
+    height: WINDOW_HEIGHT * 0.4,
+    backgroundColor: '#87CEEB',
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 10,
@@ -259,62 +205,5 @@ const styles = StyleSheet.create({
   mapPlaceholderText: {
     fontSize: 14,
     color: '#ffffff',
-  },
-  memoContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#f9f9f9',
-    padding: 15,
-    borderRadius: 10,
-    marginBottom: 10,
-  },
-  memoText: {
-    fontSize: 14,
-    color: '#333',
-  },
-  memoActions: {
-    flexDirection: 'row',
-  },
-  editText: {
-    fontSize: 14,
-    color: colors.green,
-    marginRight: 10,
-  },
-  deleteText: {
-    fontSize: 14,
-    color: colors.red,
-  },
-  noMemoText: {
-    fontSize: 14,
-    color: '#aaa',
-    textAlign: 'center',
-    marginVertical: 10,
-  },
-  memoInputContainer: {
-    height: WINDOW_HEIGHT * 0.1,
-    position: 'absolute',
-    bottom: 0,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    borderTopWidth: 1,
-    borderTopColor: '#ddd',
-    backgroundColor: colors.white,
-    padding: 10,
-    width: '100%',
-    marginBottom: 10,
-  },
-  memoInput: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    padding: 10,
-    borderRadius: 5,
-    marginRight: 10,
-  },
-  registerText: {
-    fontSize: 16,
-    color: colors.green,
   },
 });

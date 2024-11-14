@@ -12,6 +12,7 @@ import colors from '../sub/colors';
 import { WINDOW_HEIGHT } from '../sub/dimensions';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import MyPost from './myPost';
+import MyRecord from './myRecord';
 
 export default function MyContent() {
   const navigation = useNavigation();
@@ -20,69 +21,10 @@ export default function MyContent() {
     route.params?.activeTab || 'hiking'
   ); // 기본 탭은 '등산기록'
 
-  // 더미 데이터 생성
-  const hikingRecords = [
-    {
-      id: '1',
-      title: '아차산',
-      height: '287m',
-      date: '24년 04월 04일',
-      time: '12:00 ~ 14:00',
-      distance: '1.7km',
-      dPlus: 'D+1',
-      image: require('../../assets/mountain/achasan.png'), // 산 이미지 경로
-    },
-  ];
-
   // 각 탭에 따른 컨텐츠 렌더링
   const renderContent = () => {
     if (activeTab === 'hiking') {
-      return (
-        <FlatList
-          data={hikingRecords}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <View style={styles.recordItem}>
-              <Image source={item.image} style={styles.hikingImage} />
-              <View style={styles.hikingDetails}>
-                <View style={styles.hikingHeader}>
-                  <View style={styles.dPlusTag}>
-                    <Text style={styles.dPlusText}>{item.dPlus}</Text>
-                  </View>
-                  <View style={styles.hikingTitleAndHeight}>
-                    <Text style={styles.hikingTitle}>{item.title}</Text>
-                    <Text style={styles.hikingHeight}>{item.height}</Text>
-                  </View>
-                </View>
-                <View style={styles.hikingDateView}>
-                  <Image
-                    source={require('../../assets/icon/time.png')}
-                    style={styles.timeImg}
-                  />
-                  <Text style={styles.hikingDateTime}>
-                    {item.date} {item.time}
-                  </Text>
-                </View>
-                <View style={styles.hikingDistanceView}>
-                  <Image
-                    source={require('../../assets/icon/distance.png')}
-                    style={styles.distanceImg}
-                  />
-                  <Text style={styles.hikingDistance}>{item.distance}</Text>
-                </View>
-              </View>
-              <View style={styles.rightBtn}>
-                <IconButton
-                  iconName='chevron-right'
-                  size={20}
-                  color={colors.Gray}
-                  onPress={() => navigation.navigate('RecordDetail')}
-                />
-              </View>
-            </View>
-          )}
-        />
-      );
+      return <MyRecord />;
     } else if (activeTab === 'posts') {
       return <MyPost />;
     }
