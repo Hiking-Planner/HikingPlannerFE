@@ -5,11 +5,14 @@ import colors from './sub/colors';
 import { useNavigation } from '@react-navigation/native';
 import { basicAxios } from './api/axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import userInfoStore from './stores/userInfoStore'; // userInfoStore 가져오기
+import userInfoStore from './stores/userInfoStore';
+import openEyeIcon from '../assets/icon/open_eye.png';
+import closeEyeIcon from '../assets/icon/close_eye.png';
 
 const Login = () => {
   const [id, setId] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const navigation = useNavigation();
   const passwordInputRef = useRef(null);
 
@@ -76,12 +79,18 @@ const Login = () => {
         value={password}
         onChangeText={setPassword}
         placeholder="비밀번호"
-        secureTextEntry
+        secureTextEntry={!showPassword}
         returnKeyType="done"
         onSubmitEditing={() => {
-          Keyboard.dismiss(); // 키보드 닫기
-          signIn(); // 로그인 요청
+          Keyboard.dismiss();
+          signIn();
         }}
+        right={
+          <TextInput.Icon
+            icon={() => <Image source={showPassword ? openEyeIcon : closeEyeIcon} style={{ width: 24, height: 24 }} />}
+            onPress={() => setShowPassword(!showPassword)}
+          />
+        }
       />
 
       {/* 로그인 버튼 */}
