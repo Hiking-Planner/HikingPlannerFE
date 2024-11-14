@@ -23,6 +23,9 @@ export default function Commu() {
   const [mountainName, setMountainName] = useState('');
   const [images, setImages] = useState([]);
   const [isMenuVisible, setIsMenuVisible] = useState(false);
+  const [editingCommentId, setEditingCommentId] = useState(null); // 수정 중인 댓글 ID
+  const [editedComment, setEditedComment] = useState(''); // 수정할 댓글 내용
+
 
   // 게시물 불러오기
   const fetchPosts = async () => {
@@ -65,6 +68,31 @@ export default function Commu() {
       Alert.alert('오류', '댓글 작성에 실패했습니다.');
     }
   };
+
+  // 댓글 수정
+  const submitEditComment = async (commentId) => {
+    try {
+      await authAxios.put(`/api/v1/auth/comments/${commentId}`, { content: editedComment });
+      setEditingCommentId(null);
+      setEditedComment('');
+      fetchComments(selectedPost.boardId); // 댓글 목록 새로고침
+    } catch (error) {
+      console.error('댓글 수정 실패:', error.message);
+      Alert.alert('오류', '댓글 수정에 실패했습니다.');
+    }
+  };
+
+  // 댓글 삭제
+  const deleteComment = async (commentId) => {
+    try {
+      await authAxios.delete(`/api/v1/auth/comments/${commentId}`);
+      fetchComments(selectedPost.boardId); // 댓글 목록 새로고침
+    } catch (error) {
+      console.error('댓글 삭제 실패:', error.message);
+      Alert.alert('오류', '댓글 삭제에 실패했습니다.');
+    }
+  };
+  
 
   const selectImages = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -310,25 +338,41 @@ export default function Commu() {
                     </View>
                   )}
                   {/* 댓글 목록 */}
-                  <ScrollView
-                    style={styles.commentList}
-                    contentContainerStyle={{ flexGrow: 1 }}
-                  >
+                  <ScrollView style={styles.commentList} contentContainerStyle={{ flexGrow: 1 }}>
                     {comments.map((comment) => (
-                      <View
-                        key={comment.commentId}
-                        style={styles.commentContainer}
-                      >
-                        <Text style={styles.commentUserName}>
-                          {comment.nickname}
-                        </Text>
-                        <Text style={styles.commentText}>
-                          {comment.content}
-                        </Text>
+                      <View key={comment.commentId} style={styles.commentContainer}>
+                        <Text style={styles.commentUserName}>{comment.nickname}</Text>
+                        {editingCommentId === comment.commentId ? (
+                          <>
+                            <TextInput
+                              style={styles.commentInput}
+                              value={editedComment}
+                              onChangeText={setEditedComment}
+                            />
+                            <TouchableOpacity
+                              onPress={() => submitEditComment(comment.commentId)} // 수정 완료 버튼
+                              style={styles.commentButton}
+                            >
+                              <Text style={styles.commentButtonText}>수정 완료</Text>
+                            </TouchableOpacity>
+                          </>
+                        ) : (
+                          <Text style={styles.commentText}>{comment.content}</Text>
+                        )}
+                        <View style={styles.commentActions}>
+                          <TouchableOpacity onPress={() => {
+                            setEditingCommentId(comment.commentId);
+                            setEditedComment(comment.content);
+                          }}>
+                            <Text style={styles.editDeleteText}>수정</Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity onPress={() => deleteComment(comment.commentId)}>
+                            <Text style={styles.editDeleteText}>삭제</Text>
+                          </TouchableOpacity>
+                        </View>
                       </View>
                     ))}
                   </ScrollView>
-
                   {/* 댓글 입력 */}
                   <View style={styles.commentInputContainer}>
                     <TextInput
@@ -601,5 +645,17 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 0,
     width: '100%',
+  },
+  commentActions: {
+    flexDirection: 'row',
+    position: 'absolute',
+    right: 10,
+    top: 5,
+  },
+  editDeleteText: {
+    marginLeft: 10,
+    color: '#0AE56A',
+    fontWeight: 'bold',
+    fontSize: 14,
   },
 });
