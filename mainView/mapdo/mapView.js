@@ -7,6 +7,7 @@ import {
   Modal,
   Image,
   Text,
+  Alert,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import IconButton from '../sub/IconButton';
@@ -30,11 +31,14 @@ export const HikingMapView = () => {
   const [loading, setLoading] = useState(true);
   const [reports, setReports] = useState([]);
   const [selectedReport, setSelectedReport] = useState(null);
+  const [isFinished, setIsFinished] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   const navigation = useNavigation();
   const routeParams = useRoute().params;
   const coordinates = routeParams?.coordinates || [];
   const mountainId = routeParams?.mountainId;
+  const endPoint = routeParams?.endPoint;
 
   const mapRef = useRef(null);
 
@@ -167,6 +171,8 @@ export const HikingMapView = () => {
       }
 
       setRoute([]);
+      setIsFinished(true);
+      showFinishModal();
     }
     setTracking(!tracking);
   };
@@ -196,6 +202,22 @@ export const HikingMapView = () => {
     }
   };
 
+  const showFinishModal = () => {
+    setIsModalVisible(true);
+
+    // 3초 후에 모달을 닫고 이전 화면으로 이동
+    const timeoutId = setTimeout(() => {
+      setIsModalVisible(false);
+      navigation.navigate('MountainMainApi');
+    }, 3000);
+
+    return () => clearTimeout(timeoutId); // 컴포넌트가 언마운트 될 때 타이머 정리
+  };
+
+  const handleCancel = () => {
+    setIsModalVisible(false); // 모달을 닫아 상태 초기화
+  };
+
   const handleBackButtonPress = _.debounce(() => {
     navigation.goBack();
   }, 300);
@@ -214,7 +236,9 @@ export const HikingMapView = () => {
         <View style={styles.leftBtn}>
           <IconButton iconName='chevron-left' onPress={handleBackButtonPress} />
         </View>
-        <Text style={styles.headerTitle}>등산중</Text>
+        <Text style={styles.headerTitle}>
+          {isFinished ? '등산종료' : '등산중'}
+        </Text>
       </View>
       <MapView
         ref={mapRef}
@@ -222,6 +246,11 @@ export const HikingMapView = () => {
         initialRegion={initialRegion}
         showsUserLocation={true}
       >
+        <Polyline
+          coordinates={route}
+          strokeColor={isFinished ? 'green' : '#FF0000'} // 종료 시 초록색 라인으로 변경
+          strokeWidth={4}
+        />
         <Polyline
           coordinates={coordinates}
           strokeColor='#FF0000'
@@ -235,8 +264,29 @@ export const HikingMapView = () => {
               longitude: report.longitude,
             }}
             onPress={() => setSelectedReport(report)}
-          />
+          >
+            <Image
+              source={require('../../assets/icon/warning.png')}
+              style={{ width: 40, height: 40 }}
+              resizeMode='contain'
+            />
+          </Marker>
         ))}
+        {endPoint && (
+          <Marker
+            coordinate={{
+              latitude: endPoint[0],
+              longitude: endPoint[1],
+            }}
+            title='도착'
+          >
+            <Image
+              source={require('../../assets/icon/flag.png')}
+              style={{ width: 30, height: 30 }} // 마커 크기 조정 가능
+              resizeMode='contain'
+            />
+          </Marker>
+        )}
       </MapView>
 
       {selectedReport && (
@@ -263,6 +313,42 @@ export const HikingMapView = () => {
           </View>
         </Modal>
       )}
+
+      <Modal
+        transparent={true}
+        visible={isModalVisible}
+        animationType='slide'
+        onRequestClose={handleCancel} // Android에서 뒤로 가기 버튼을 눌렀을 때 모달 닫기
+      >
+        <View
+          style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          }}
+        >
+          <View
+            style={{
+              width: 300,
+              padding: 20,
+              backgroundColor: 'white',
+              borderRadius: 10,
+              alignItems: 'center',
+            }}
+          >
+            <Text style={{ fontSize: 18, fontWeight: 'bold' }}>
+              등산을 마쳤습니다!
+            </Text>
+            <Text style={{ marginTop: 10 }}>
+              3초 뒤 이전 화면으로 이동합니다
+            </Text>
+            <TouchableOpacity onPress={handleCancel} style={{ marginTop: 20 }}>
+              <Text style={{ color: 'blue' }}>취소</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
 
       <View style={styles.bottomButtonContainer}>
         <SosButton userId='1' location={location} userName='채인' />
