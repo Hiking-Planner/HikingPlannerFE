@@ -96,7 +96,7 @@ const SignUp = () => {
 
   const isPasswordMatch = password === confirmPassword;
   const isPasswordValid =
-    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,13}$/.test(password);
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,13}$/.test(password);
 
   return (
     <View style={styles.container}>
