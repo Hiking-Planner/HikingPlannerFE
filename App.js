@@ -7,7 +7,6 @@ import {
 } from '@react-navigation/stack';
 import Home from './mainView/home';
 import Start from './mainView/start';
-import Kakaologin from './mainView/kakaologin';
 import Login from './mainView/login';
 import Signup from './mainView/signup';
 import Mountain from './mainView/mountaindo/mountain';
@@ -41,7 +40,6 @@ function App() {
       >
         <Stack.Screen name='Home' component={Home} />
         <Stack.Screen name='Start' component={Start} />
-        <Stack.Screen name='Kakaologin' component={Kakaologin} />
         <Stack.Screen name='Login' component={Login} />
         <Stack.Screen name='Signup' component={Signup} />
         <Stack.Screen name='Mountain' component={Mountain} />

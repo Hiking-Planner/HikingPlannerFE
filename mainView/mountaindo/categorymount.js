@@ -95,7 +95,7 @@ export default function CategoryMountain() {
   if (loading) {
     return (
       <View style={styles.container}>
-        <ActivityIndicator size='large' color={colors.Green} />
+        <ActivityIndicator size="large" color={colors.Green} />
       </View>
     );
   }

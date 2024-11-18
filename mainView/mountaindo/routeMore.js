@@ -49,7 +49,7 @@ export default function RouteMore({ route }) {
   }, [trail_id]);
 
   if (loading) {
-    return <ActivityIndicator size='large' color={colors.primary} />;
+    return <ActivityIndicator size="large" color={colors.primary} />;
   }
 
   if (!coordinates || coordinates.length === 0) {

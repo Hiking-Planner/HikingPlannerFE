@@ -126,7 +126,7 @@ const Route = ({ mountainId, onRoutesFetched, mountain }) => {
   }, [mountainId, onRoutesFetched]); // mountainId와 onRoutesFetched가 변경될 때만 실행
 
   if (loading) {
-    return <ActivityIndicator size='large' color={colors.primary} />;
+    return <ActivityIndicator size= "large" color={colors.primary} />;
   }
 
   if (!routes || routes.length === 0) {
