@@ -38,8 +38,6 @@ const MountainMainApi = ({ route }) => {
         `/api/v1/auth/updatetrail?mountainid=${mountain.mountain_id}`
       );
 
-      console.log('API Response:', response.data);
-
       // API 요청이 성공했으면 refreshKey 증가
       setRefreshKey((prevKey) => {
         const newKey = prevKey + 1;
@@ -119,12 +117,14 @@ const MountainMainApi = ({ route }) => {
                   );
                   return null;
                 }
+
+                const markerOffset = index * 0.00899999;
                 return (
                   <Marker
                     key={index}
                     coordinate={{
-                      latitude: startPoint[0],
-                      longitude: startPoint[1],
+                      latitude: startPoint[0] + markerOffset,
+                      longitude: startPoint[1] + markerOffset,
                     }}
                     onPress={() =>
                       navigation.navigate('RouteMore', {
