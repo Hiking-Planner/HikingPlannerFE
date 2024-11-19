@@ -107,7 +107,7 @@ export default function RecordDetail() {
               <Polyline
                 coordinates={hikingTrailData}
                 strokeColor='#f01111'
-                strokeWidth={8}
+                strokeWidth={5}
               />
             </MapView>
           ) : (

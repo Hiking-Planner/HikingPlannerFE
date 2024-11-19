@@ -8,7 +8,6 @@ import {
   Image,
   Text,
 } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import IconButton from '../sub/IconButton';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import MapView, { PROVIDER_GOOGLE, Polyline, Marker } from 'react-native-maps';
@@ -44,7 +43,7 @@ export const HikingMapView = () => {
 
   useEffect(() => {
     const initializeData = async () => {
-      await Promise.all([initializeLocation(), loadReportsFromStorage()]);
+      await Promise.all([initializeLocation(), fetchReportsFromServer()]);
     };
     initializeData();
   }, []);
@@ -83,12 +82,21 @@ export const HikingMapView = () => {
     }
   };
 
+  const fetchReportsFromServer = async () => {
+    try {
+      const response = await authAxios.get('/api/v1/auth/trailReports');
+      setReports(response.data); // 서버에서 받아온 데이터를 reports 상태로 저장
+    } catch (error) {
+      console.error('Error fetching reports from server:', error);
+    }
+  };
+
   const startLocationTracking = async () => {
     const locationSubscription = await Location.watchPositionAsync(
       {
         accuracy: Location.Accuracy.BestForNavigation,
-        timeInterval: 30000, // 시간 간격을 늘림
-        distanceInterval: 10, // 최소 거리 기준을 설정
+        timeInterval: 30000,
+        distanceInterval: 10,
       },
       (newLocation) => {
         const { latitude, longitude } = newLocation.coords;
@@ -178,34 +186,22 @@ export const HikingMapView = () => {
   };
 
   const handleReportSubmit = async (report) => {
-    const newReports = [...reports, report];
-    setReports(newReports);
-    await saveReportsToStorage(newReports);
-  };
-
-  const saveReportsToStorage = async (reports) => {
     try {
-      await AsyncStorage.setItem('reports', JSON.stringify(reports));
-    } catch (error) {
-      console.error('Error saving reports to storage:', error);
-    }
-  };
+      // 1. 서버에 신고 데이터 전송
+      await authAxios.post('/api/v1/auth/trailReports', report);
 
-  const loadReportsFromStorage = async () => {
-    try {
-      const storedReports = await AsyncStorage.getItem('reports');
-      if (storedReports) {
-        setReports(JSON.parse(storedReports));
-      }
+      // 2. 서버에서 최신 신고 데이터 다시 가져오기
+      await fetchReportsFromServer();
+
+      console.log('Report submitted and data updated');
     } catch (error) {
-      console.error('Error loading reports from storage:', error);
+      console.error('Error submitting report:', error);
     }
   };
 
   const showFinishModal = () => {
     setIsModalVisible(true);
 
-    // 3초 후에 모달을 닫고 이전 화면으로 이동
     const timeoutId = setTimeout(() => {
       setIsModalVisible(false);
       navigation.navigate('MountainMainApi', {
@@ -213,12 +209,12 @@ export const HikingMapView = () => {
       });
     }, 3000);
 
-    return () => clearTimeout(timeoutId); // 컴포넌트가 언마운트 될 때 타이머 정리
+    return () => clearTimeout(timeoutId);
   };
 
   const handleCancel = () => {
     setIsFinished(false);
-    setIsModalVisible(false); // 모달을 닫아 상태 초기화
+    setIsModalVisible(false);
   };
 
   const handleBackButtonPress = _.debounce(() => {
@@ -249,11 +245,7 @@ export const HikingMapView = () => {
         initialRegion={initialRegion}
         showsUserLocation={true}
       >
-        <Polyline
-          coordinates={route}
-          strokeColor={isFinished ? 'green' : '#FF0000'} // 종료 시 초록색 라인으로 변경
-          strokeWidth={4}
-        />
+        <Polyline coordinates={route} strokeColor='#0000FF' strokeWidth={4} />
         <Polyline
           coordinates={coordinates}
           strokeColor='#FF0000'
@@ -263,8 +255,8 @@ export const HikingMapView = () => {
           <Marker
             key={index}
             coordinate={{
-              latitude: report.latitude,
-              longitude: report.longitude,
+              latitude: parseFloat(report.latitude),
+              longitude: parseFloat(report.longitude),
             }}
             onPress={() => setSelectedReport(report)}
           >
@@ -285,7 +277,7 @@ export const HikingMapView = () => {
           >
             <Image
               source={require('../../assets/icon/flag.png')}
-              style={{ width: 30, height: 30 }} // 마커 크기 조정 가능
+              style={{ width: 30, height: 30 }}
               resizeMode='contain'
             />
           </Marker>
@@ -321,7 +313,7 @@ export const HikingMapView = () => {
         transparent={true}
         visible={isModalVisible}
         animationType='slide'
-        onRequestClose={handleCancel} // Android에서 뒤로 가기 버튼을 눌렀을 때 모달 닫기
+        onRequestClose={handleCancel}
       >
         <View
           style={{
@@ -387,7 +379,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     textAlign: 'center',
-    width: '100%', // 제목을 중앙에 고정하기 위해 전체 너비 사용
+    width: '100%',
   },
 
   map: {

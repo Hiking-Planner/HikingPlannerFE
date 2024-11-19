@@ -13,8 +13,9 @@ import { WINDOW_HEIGHT } from '../sub/dimensions';
 import Route from '../scrapdo/route';
 import { useNavigation } from '@react-navigation/native';
 import MapView, { Marker } from 'react-native-maps';
-import { basicAxios, authAxios } from '../api/axios';
+import { basicAxios } from '../api/axios';
 import MountainWeather from './mountainWeather';
+import TrailButtonGroup from './TrailButtonGroup';
 
 const MountainMainApi = ({ route }) => {
   const initialMountain = route.params.mountain;
@@ -22,11 +23,6 @@ const MountainMainApi = ({ route }) => {
   const [routes, setRoutes] = useState([]);
   const [refreshKey, setRefreshKey] = useState(0);
   const scrollViewRef = useRef(null);
-
-  useEffect(() => {
-    setMountain({ ...initialMountain });
-    scrollViewRef.current?.scrollTo({ y: 0, animated: false });
-  }, [refreshKey]);
 
   const navigation = useNavigation();
   const latitude = mountain.centerlatlon[0];
@@ -38,12 +34,22 @@ const MountainMainApi = ({ route }) => {
 
   const handleRefresh = async () => {
     try {
-      const response = await authAxios.get(
+      const response = await basicAxios.get(
         `/api/v1/auth/updatetrail?mountainid=${mountain.mountain_id}`
       );
-      setRefreshKey((prevKey) => prevKey + 1);
+
+      console.log('API Response:', response.data);
+
+      // API 요청이 성공했으면 refreshKey 증가
+      setRefreshKey((prevKey) => {
+        const newKey = prevKey + 1;
+        return newKey;
+      });
+
+      // 상태 업데이트
+      setRoutes(response.data.trails || []); // 데이터를 업데이트 (빈 배열로 초기화 가능)
     } catch (error) {
-      console.error(error);
+      console.error('Error refreshing data:', error);
     }
   };
 
@@ -101,8 +107,12 @@ const MountainMainApi = ({ route }) => {
               }}
             >
               {routes.map((route, index) => {
-                const startPoint = JSON.parse(route.start_point);
+                const startPoint =
+                  route.trail_id === 10001
+                    ? JSON.parse(route.end_point) // trailId가 10001이면 endPoint를 startPoint로 사용
+                    : JSON.parse(route.start_point);
                 const endPoint = JSON.parse(route.end_point);
+
                 if (!startPoint || startPoint.length < 2) {
                   console.warn(
                     `Invalid startPoint for route ${route.trail_name}`
@@ -148,20 +158,24 @@ const MountainMainApi = ({ route }) => {
             >
               <Text style={styles.startHikingText}>바로 등산 시작하기</Text>
             </TouchableOpacity>
+            {mountain.mountain_id === 1 && <TrailButtonGroup />}
             <View style={styles.roadView}>
               <View style={styles.roadHeader}>
                 <Text style={styles.roadText}>총 {routes.length} 개 코스</Text>
-                <TouchableOpacity
-                  style={styles.refreshBtn}
-                  onPress={handleRefresh}
-                >
-                  <IconButton iconName='rotate-cw' size={15} />
+                <TouchableOpacity style={styles.refreshBtn}>
+                  <IconButton
+                    iconName='rotate-cw'
+                    size={15}
+                    onPress={handleRefresh}
+                  />
                 </TouchableOpacity>
               </View>
               <Route
                 key={refreshKey}
                 mountainId={mountain.mountain_id}
-                onRoutesFetched={handleRoutesFetched}
+                onRoutesFetched={(fetchedRoutes) => {
+                  setRoutes(fetchedRoutes);
+                }}
                 mountain={mountain}
               />
             </View>

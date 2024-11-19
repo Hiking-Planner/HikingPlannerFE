@@ -12,19 +12,6 @@ import { WINDOW_WIDTH } from '../sub/dimensions';
 import { useNavigation } from '@react-navigation/native';
 import { basicAxios } from '../api/axios';
 
-function getDifficultyColor(difficulty) {
-  switch (difficulty) {
-    case '쉬움':
-      return 'green';
-    case '보통':
-      return 'orange';
-    case '어려움':
-      return 'red';
-    default:
-      return 'black';
-  }
-}
-
 const formatTime = (totalMinutes) => {
   const hours = Math.floor(totalMinutes / 60);
   const minutes = totalMinutes % 60;
@@ -41,37 +28,29 @@ const RouteCard = ({
   trail_id,
   name,
   description,
-  difficulty,
   time,
   distance,
   endPoint,
   mountain,
 }) => {
-  const formattedTime = formatTime(time);
+  const formattedTime = formatTime(time || 60); // 시간 값이 없으면 60분(1시간) 기본값 사용
+  const displayDistance = distance || 3; // 거리 값이 없으면 5km 기본값 사용
   const navigation = useNavigation();
 
   return (
     <TouchableOpacity style={styles.routeItem}>
       <View style={styles.routeInfo}>
         <Text style={styles.routeName}>{name}</Text>
-        <Text style={styles.routeDescription}>{description}</Text>
+        <Text style={styles.routeDescription}>
+          {description || '설명 없음'}
+        </Text>
       </View>
       <View style={styles.routeDetails}>
-        <View style={styles.detailsView}>
-          <Text
-            style={[
-              styles.routeDifficulty,
-              { color: getDifficultyColor(difficulty) },
-            ]}
-          >
-            {difficulty}
-          </Text>
-        </View>
         <View style={styles.detailsView}>
           <Text style={styles.routeTime}>{formattedTime}</Text>
         </View>
         <View style={styles.detailsView}>
-          <Text style={styles.routeDistance}>{`${distance}km`}</Text>
+          <Text style={styles.routeDistance}>{`${displayDistance}km`}</Text>
         </View>
       </View>
       <View style={styles.rightBtn}>
@@ -95,7 +74,7 @@ const RouteCard = ({
 
 const Route = ({ mountainId, onRoutesFetched, mountain }) => {
   const [routes, setRoutes] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // 로딩 상태 추가
 
   useEffect(() => {
     const fetchRoutes = async () => {
@@ -103,27 +82,22 @@ const Route = ({ mountainId, onRoutesFetched, mountain }) => {
         const response = await basicAxios.get(
           `/api/v1/auth/getAllTrails/${mountainId}`
         );
-        const data = response.data;
 
-        // API 응답이 배열인지 확인
-        if (Array.isArray(data)) {
-          setRoutes(data);
-          onRoutesFetched(data); // 경로 데이터를 부모 컴포넌트로 전달
+        if (Array.isArray(response.data)) {
+          setRoutes(response.data); // 로컬 상태에 데이터 설정
+          onRoutesFetched(response.data); // 부모로 데이터 전달
         } else {
-          console.error('API 응답이 배열 형식이 아닙니다:', data);
-          setRoutes([]);
-          onRoutesFetched([]);
+          console.warn('Unexpected data format:', response.data);
         }
       } catch (error) {
-        console.error('API 호출 중 오류 발생:', error);
-        onRoutesFetched([]);
+        console.error('Error fetching routes:', error);
       } finally {
-        setLoading(false);
+        setLoading(false); // 로딩 상태 종료
       }
     };
 
     fetchRoutes();
-  }, [mountainId, onRoutesFetched]); // mountainId와 onRoutesFetched가 변경될 때만 실행
+  }, [mountainId, onRoutesFetched]);
 
   if (loading) {
     return <ActivityIndicator size='large' color={colors.primary} />;
@@ -142,12 +116,12 @@ const Route = ({ mountainId, onRoutesFetched, mountain }) => {
       {routes.map((item) => (
         <RouteCard
           key={item.trail_id}
-          trail_id={item.trail_id} // trail_id를 RouteMore로 전달
+          trail_id={item.trail_id}
           name={item.trail_name}
           description={item.trail_comment}
           difficulty={item.difficulty}
-          time={item.up_time + item.down_time}
-          distance={item.total_length}
+          time={item.up_time || 0 || 60} // 기본값 60분
+          distance={item.total_length || 3} // 기본값 5km
           endPoint={JSON.parse(item.end_point)}
           mountain={mountain}
         />
@@ -185,6 +159,7 @@ const styles = StyleSheet.create({
   },
   routeDetails: {
     flex: 1.5,
+    marginTop: 10,
     marginLeft: 5,
   },
   detailsView: {
