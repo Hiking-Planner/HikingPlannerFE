@@ -11,7 +11,6 @@ import IconButton from '../sub/IconButton';
 import MapView, { Polyline, Marker } from 'react-native-maps';
 import colors from '../sub/colors';
 import { WINDOW_HEIGHT } from '../sub/dimensions';
-import { PROVIDER_GOOGLE } from 'react-native-maps';
 import { useNavigation } from '@react-navigation/native';
 import { basicAxios } from '../api/axios';
 
@@ -49,7 +48,7 @@ export default function RouteMore({ route }) {
   }, [trail_id]);
 
   if (loading) {
-    return <ActivityIndicator size="large" color={colors.primary} />;
+    return <ActivityIndicator size='large' color={colors.primary} />;
   }
 
   if (!coordinates || coordinates.length === 0) {
@@ -60,11 +59,13 @@ export default function RouteMore({ route }) {
     );
   }
 
+  // 좌표 변환
   const convertedCoordinates = coordinates.map(([latitude, longitude]) => ({
-    latitude: latitude,
-    longitude: longitude,
+    latitude,
+    longitude,
   }));
 
+  // 중심 좌표 계산
   const latitudeSum = convertedCoordinates.reduce(
     (sum, coord) => sum + coord.latitude,
     0
@@ -76,6 +77,8 @@ export default function RouteMore({ route }) {
   const count = convertedCoordinates.length;
   const centerLatitude = latitudeSum / count;
   const centerLongitude = longitudeSum / count;
+
+  // 지도 확대 영역 설정
   const latitudeDelta =
     Math.max(
       ...convertedCoordinates.map((coord) =>
@@ -92,6 +95,13 @@ export default function RouteMore({ route }) {
     ) *
       2 +
     0.005;
+
+  const endPointCoordinates =
+    trail_id === 10001
+      ? convertedCoordinates[0] // trailId가 10001이면 startPoint 사용
+      : endPoint && Array.isArray(endPoint) && endPoint.length === 2
+      ? { latitude: endPoint[0], longitude: endPoint[1] }
+      : convertedCoordinates[convertedCoordinates.length - 1]; // 기본적으로 마지막 좌표 사용
 
   return (
     <View style={styles.container}>
@@ -124,18 +134,12 @@ export default function RouteMore({ route }) {
                 strokeColor='#FF0000'
                 strokeWidth={4}
               />
-              {endPoint && (
-                <Marker
-                  coordinate={{
-                    latitude: endPoint[0],
-                    longitude: endPoint[1],
-                  }}
-                  title='도착'
-                >
+              {endPointCoordinates && (
+                <Marker coordinate={endPointCoordinates} title='도착'>
                   <Image
                     source={require('../../assets/icon/flag.png')}
-                    style={{ width: 30, height: 30 }} // 여기서 마커 크기 조정 가능
-                    resizeMode='contain' // 이미지가 잘리지 않도록 조정
+                    style={{ width: 30, height: 30 }}
+                    resizeMode='contain'
                   />
                 </Marker>
               )}
@@ -147,7 +151,7 @@ export default function RouteMore({ route }) {
               navigation.navigate('HikingMapView', {
                 coordinates: convertedCoordinates,
                 mountainId: route.params.mountainId,
-                endPoint: endPoint,
+                endPoint: endPointCoordinates,
                 mountain,
               })
             }

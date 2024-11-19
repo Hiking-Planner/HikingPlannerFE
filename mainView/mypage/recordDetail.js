@@ -100,14 +100,28 @@ export default function RecordDetail() {
               initialRegion={{
                 latitude: hikingTrailData[0].latitude,
                 longitude: hikingTrailData[0].longitude,
-                latitudeDelta: 0.01,
+                latitudeDelta: 0.01, // 기존보다 축소된 값으로 확대
                 longitudeDelta: 0.01,
+              }}
+              onMapReady={() => {
+                if (
+                  Array.isArray(hikingTrailData) &&
+                  hikingTrailData.length > 0
+                ) {
+                  this.mapRef.fitToCoordinates(hikingTrailData, {
+                    edgePadding: { top: 50, right: 50, bottom: 50, left: 50 },
+                    animated: true,
+                  });
+                }
+              }}
+              ref={(ref) => {
+                this.mapRef = ref;
               }}
             >
               <Polyline
                 coordinates={hikingTrailData}
                 strokeColor='#f01111'
-                strokeWidth={8}
+                strokeWidth={5}
               />
             </MapView>
           ) : (
