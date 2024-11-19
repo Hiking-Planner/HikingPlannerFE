@@ -9,7 +9,6 @@ import {
   Text,
   Button,
 } from 'react-native';
-import { FontAwesome } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import colors from '../sub/colors';
