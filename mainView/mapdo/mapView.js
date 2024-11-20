@@ -187,17 +187,30 @@ export const HikingMapView = () => {
 
   const handleReportSubmit = async (report) => {
     try {
-      // 1. 서버에 신고 데이터 전송
-      await authAxios.post('/api/v1/auth/trailReports', report);
+      const response = await authAxios.post(
+        '/api/v1/auth/trailReports',
+        report
+      );
 
-      // 2. 서버에서 최신 신고 데이터 다시 가져오기
-      await fetchReportsFromServer();
+      // 서버에서 반환된 데이터를 바로 추가
+      setReports((prevReports) => [...prevReports, response.data]);
 
-      console.log('Report submitted and data updated');
+      console.log('Report submitted and added to state');
     } catch (error) {
-      console.error('Error submitting report:', error);
+      console.error('여기가 에러:', error);
     }
   };
+  useEffect(() => {
+    if (mapRef.current && reports.length > 0) {
+      const lastReport = reports[reports.length - 1];
+      mapRef.current.animateToRegion({
+        latitude: parseFloat(lastReport.latitude),
+        longitude: parseFloat(lastReport.longitude),
+        latitudeDelta: 0.005,
+        longitudeDelta: 0.005,
+      });
+    }
+  }, [reports]);
 
   const showFinishModal = () => {
     setIsModalVisible(true);
@@ -240,17 +253,13 @@ export const HikingMapView = () => {
         </Text>
       </View>
       <MapView
+        key={reports.length} // reports가 변경될 때마다 MapView 재렌더링
         ref={mapRef}
         style={styles.map}
         initialRegion={initialRegion}
         showsUserLocation={true}
       >
         <Polyline coordinates={route} strokeColor='#0000FF' strokeWidth={4} />
-        <Polyline
-          coordinates={coordinates}
-          strokeColor='#FF0000'
-          strokeWidth={4}
-        />
         {reports.map((report, index) => (
           <Marker
             key={index}
@@ -267,21 +276,6 @@ export const HikingMapView = () => {
             />
           </Marker>
         ))}
-        {endPoint && (
-          <Marker
-            coordinate={{
-              latitude: endPoint[0],
-              longitude: endPoint[1],
-            }}
-            title='도착'
-          >
-            <Image
-              source={require('../../assets/icon/flag.png')}
-              style={{ width: 30, height: 30 }}
-              resizeMode='contain'
-            />
-          </Marker>
-        )}
       </MapView>
 
       {selectedReport && (
@@ -348,7 +342,7 @@ export const HikingMapView = () => {
       <View style={styles.bottomButtonContainer}>
         <SosButton userId='1' location={location} userName='채인' />
         <StartStopButton tracking={tracking} onPress={handleStartStopButton} />
-        <RoadWarningButton onSubmit={handleReportSubmit} />
+        <RoadWarningButton reports={reports} setReports={setReports} />
       </View>
     </View>
   );
