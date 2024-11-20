@@ -13,9 +13,9 @@ import * as Location from 'expo-location';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import colors from '../sub/colors';
 import { Picker } from '@react-native-picker/picker';
-import { basicAxios } from '../api/axios';
+import { authAxios } from '../api/axios';
 
-const RoadWarningButton = ({ onSubmit }) => {
+const RoadWarningButton = ({ reports, setReports }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [imageUri, setImageUri] = useState(null);
   const [reportType, setReportType] = useState('등산로 이상');
@@ -46,9 +46,25 @@ const RoadWarningButton = ({ onSubmit }) => {
   };
 
   const submitReport = async () => {
+    if (!imageUri) {
+      alert('사진을 먼저 촬영해주세요.');
+      return;
+    }
+
+    let latitude = 0;
+    let longitude = 0;
+
     try {
       const currentLocation = await Location.getCurrentPositionAsync({});
-      const { latitude, longitude } = currentLocation.coords;
+      latitude = currentLocation.coords.latitude;
+      longitude = currentLocation.coords.longitude;
+    } catch (error) {
+      alert('위치 데이터를 가져오지 못했습니다. 위치 서비스를 활성화해주세요.');
+      console.error('Location Error:', error);
+      return;
+    }
+
+    try {
       const timestamp = new Date().toISOString();
       const report = reportType === '기타' ? customReport : reportType;
 
@@ -68,7 +84,7 @@ const RoadWarningButton = ({ onSubmit }) => {
         })
       );
 
-      const response = await basicAxios.post(
+      const response = await authAxios.post(
         '/api/v1/auth/trailReport',
         formData,
         {
@@ -76,23 +92,16 @@ const RoadWarningButton = ({ onSubmit }) => {
         }
       );
 
-      console.log('Response:', response.data);
+      setReports((prevReports) => [...prevReports, response.data]);
 
-      const responseData = {
-        ...response.data,
-        latitude: parseFloat(response.data.latitude),
-        longitude: parseFloat(response.data.longitude),
-      };
-
-      onSubmit(responseData);
-
+      // 초기화
       setModalVisible(false);
       setImageUri(null);
       setReportType('등산로 이상');
       setCustomReport('');
       setIsCameraVisible(true);
     } catch (error) {
-      console.error('Error submitting report:', error);
+      console.error('버튼이 에러:', error.response || error.message);
     }
   };
 

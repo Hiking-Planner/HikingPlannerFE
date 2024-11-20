@@ -125,17 +125,17 @@ export default function TrailButtonGroup() {
         title={`1번 경로 (${trailCounts[1]}회 등산)`}
         onPress={() => handleButtonClick(1)}
       />
-      <Text style={{ marginVertical: 10 }}></Text>
+      <Text style={{ marginVertical: 5 }}></Text>
       <Button
         title={`2번 경로 (${trailCounts[2]}회 등산)`}
         onPress={() => handleButtonClick(2)}
       />
       <Text style={{ marginVertical: 10 }}></Text>
-      <Button
+      {/* <Button
         title='등산 횟수 초기화'
         onPress={resetTrailCounts} // 초기화 버튼 추가
         color='red' // 초기화 버튼 색상
-      />
+      /> */}
     </View>
   );
 }
