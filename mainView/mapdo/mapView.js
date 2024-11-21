@@ -260,6 +260,11 @@ export const HikingMapView = () => {
         showsUserLocation={true}
       >
         <Polyline coordinates={route} strokeColor='#0000FF' strokeWidth={4} />
+        <Polyline
+          coordinates={coordinates}
+          strokeColor='#FF0000'
+          strokeWidth={4}
+        />
         {reports.map((report, index) => (
           <Marker
             key={index}
