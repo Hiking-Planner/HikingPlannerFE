@@ -158,7 +158,7 @@ const MountainMainApi = ({ route }) => {
             >
               <Text style={styles.startHikingText}>바로 등산 시작하기</Text>
             </TouchableOpacity>
-            {mountain.mountain_id === 1 && <TrailButtonGroup />}
+            {/* {mountain.mountain_id === 1 && <TrailButtonGroup />} */}
             <View style={styles.roadView}>
               <View style={styles.roadHeader}>
                 <Text style={styles.roadText}>총 {routes.length} 개 코스</Text>
