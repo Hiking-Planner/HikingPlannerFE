@@ -8,6 +8,9 @@ import {
   TouchableOpacity,
   Text,
   Button,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
 } from 'react-native';
 import * as Location from 'expo-location';
 import { CameraView, useCameraPermissions } from 'expo-camera';
@@ -136,61 +139,67 @@ const RoadWarningButton = ({ reports, setReports }) => {
         animationType='slide'
         statusBarTranslucent={true}
       >
-        <View style={styles.modalContainer}>
-          {isCameraVisible ? (
-            <CameraView style={styles.camera} ref={cameraRef} />
-          ) : (
-            <>
-              {imageUri && (
-                <Image source={{ uri: imageUri }} style={styles.preview} />
-              )}
-              <Picker
-                selectedValue={reportType}
-                style={styles.picker}
-                onValueChange={(itemValue) => setReportType(itemValue)}
-              >
-                <Picker.Item label='등산로 이상' value='등산로 이상' />
-                <Picker.Item label='공사 중' value='공사 중' />
-                <Picker.Item label='자연재해' value='자연재해' />
-                <Picker.Item label='야생동물' value='야생동물' />
-                <Picker.Item label='기타' value='기타' />
-              </Picker>
-              {reportType === '기타' && (
-                <TextInput
-                  style={styles.input}
-                  placeholder='신고 내용 입력'
-                  value={customReport}
-                  onChangeText={setCustomReport}
-                />
-              )}
-
-              <View style={styles.buttonContainer}>
-                <TouchableOpacity
-                  style={[styles.button, styles.shadow]}
-                  onPress={submitReport}
-                >
-                  <Text style={styles.buttonText}>이상 신고하기</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.button, styles.shadow]}
-                  onPress={retakePicture}
-                >
-                  <Text style={styles.buttonText}>사진 재촬영</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.button, styles.shadow]}
-                  onPress={() => setModalVisible(false)}
-                >
-                  <Text style={[styles.buttonText, styles.cancleBtn]}>
-                    취소
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </>
-          )}
-          <View style={styles.buttonContainer}>
-            {isCameraVisible && (
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        >
+          <ScrollView
+            contentContainerStyle={styles.modalContainer}
+            keyboardShouldPersistTaps='handled'
+          >
+            {isCameraVisible ? (
+              <CameraView style={styles.camera} ref={cameraRef} />
+            ) : (
               <>
+                {imageUri && (
+                  <Image source={{ uri: imageUri }} style={styles.preview} />
+                )}
+                <Picker
+                  selectedValue={reportType}
+                  style={styles.picker}
+                  onValueChange={(itemValue) => setReportType(itemValue)}
+                >
+                  <Picker.Item label='등산로 이상' value='등산로 이상' />
+                  <Picker.Item label='공사 중' value='공사 중' />
+                  <Picker.Item label='자연재해' value='자연재해' />
+                  <Picker.Item label='야생동물' value='야생동물' />
+                  <Picker.Item label='기타' value='기타' />
+                </Picker>
+                {reportType === '기타' && (
+                  <TextInput
+                    style={styles.input}
+                    placeholder='신고 내용 입력'
+                    value={customReport}
+                    onChangeText={setCustomReport}
+                  />
+                )}
+
+                <View style={styles.buttonContainer}>
+                  <TouchableOpacity
+                    style={[styles.button, styles.shadow]}
+                    onPress={submitReport}
+                  >
+                    <Text style={styles.buttonText}>이상 신고하기</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.button, styles.shadow]}
+                    onPress={retakePicture}
+                  >
+                    <Text style={styles.buttonText}>사진 재촬영</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.button, styles.shadow]}
+                    onPress={() => setModalVisible(false)}
+                  >
+                    <Text style={[styles.buttonText, styles.cancleBtn]}>
+                      취소
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </>
+            )}
+            {isCameraVisible && (
+              <View style={styles.buttonContainer}>
                 <TouchableOpacity
                   style={[styles.button, styles.shadow]}
                   onPress={takePicture}
@@ -203,10 +212,10 @@ const RoadWarningButton = ({ reports, setReports }) => {
                 >
                   <Text style={styles.buttonText}>취소</Text>
                 </TouchableOpacity>
-              </>
+              </View>
             )}
-          </View>
-        </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
       </Modal>
     </>
   );
