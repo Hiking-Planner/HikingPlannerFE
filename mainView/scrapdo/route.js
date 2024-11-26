@@ -32,6 +32,7 @@ const RouteCard = ({
   distance,
   endPoint,
   mountain,
+  mountainId,
 }) => {
   const formattedTime = formatTime(time || 60); // 시간 값이 없으면 60분(1시간) 기본값 사용
   const displayDistance = distance || 3; // 거리 값이 없으면 5km 기본값 사용
@@ -64,6 +65,7 @@ const RouteCard = ({
               name,
               endPoint,
               mountain,
+              mountainId,
             })
           }
         />
@@ -124,6 +126,7 @@ const Route = ({ mountainId, onRoutesFetched, mountain }) => {
           distance={item.total_length || 3} // 기본값 5km
           endPoint={JSON.parse(item.end_point)}
           mountain={mountain}
+          mountainId={mountainId}
         />
       ))}
     </View>
